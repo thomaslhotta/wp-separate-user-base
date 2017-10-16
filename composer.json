@@ -1,0 +1,6 @@
+{
+    "name": "thomaslhotta/wp-separate-user-base",
+    "type": "wordpress-muplugin",
+    "license": "MIT",
+    "require": {}
+}
