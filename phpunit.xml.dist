@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<phpunit bootstrap="tests/includes/bootstrap.php"
+         backupGlobals="false"
+         colors="true"
+         convertErrorsToExceptions="true"
+         convertNoticesToExceptions="true"
+         convertWarningsToExceptions="true"
+         stopOnError="false"
+         beStrictAboutTestsThatDoNotTestAnything="false">
+
+    <testsuites>
+        <testsuite>
+            <directory suffix="test.php">./tests/tests/</directory>
+            <directory suffix=".php">./vendor/wordpress/phpunit/tests/phpunit/tests</directory>
+        </testsuite>
+    </testsuites>
+
+    <groups>
+        <exclude>
+            <group>ajax</group>
+            <group>ms-excluded</group>
+            <group>ms-files</group>
+            <group>external-http</group>
+            <group>plugins</group>
+            <group>admin-bar</group>
+            <group>http</group>
+            <group>customize</group>
+        </exclude>
+    </groups>
+
+    <filter>
+        <blacklist>
+        	<directory>.vendor/</directory>
+        </blacklist>
+    </filter>
+    <!--<logging>
+       <log type="coverage-html" target="log/" charset="UTF-8" yui="true" />
+    </logging>-->
+
+    <php>
+        <const name="DB_NAME" value="wp_test"/>
+        <const name="DB_USER" value="root"/>
+        <const name="DB_PASSWORD" value=""/>
+        <const name="DB_HOST" value="localhost"/>
+        <const name="WP_TESTS_DOMAIN" value="test.dev"/>
+        <const name="WP_ENV" value="development"/>
+        <const name="WP_RUN_CORE_TESTS" value="1" />
+    </php>
+</phpunit>

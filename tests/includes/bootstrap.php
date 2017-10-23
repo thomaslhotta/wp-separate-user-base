@@ -1,16 +1,14 @@
 <?php
 // Set timezone to prevent warnings
-//date_default_timezone_set( 'Europe/Berlin' );
-$base_dir = realpath( BASE_DIR );
+if ( ! defined( 'BASE_DIR' ) ) {
+	define( 'BASE_DIR', realpath( __DIR__ . '/../..' ) );
+}
 
-// Enable composer auto loading
+define( 'WP_TESTS_DIR', BASE_DIR . '/vendor/wordpress/phpunit/tests/phpunit/' );
+define( 'ABSPATH', BASE_DIR . '/vendor/wordpress/phpunit/src/' );
 
-$wp_tests_dir = $base_dir . '/vendor/wordpress/phpunit/tests/phpunit/';
 
-define( 'WP_TESTS_DIR', $wp_tests_dir );
-//define( 'CONTENT_DIR', '/tmp' );
-
-$table_prefix  = 'wptests_';
+$table_prefix = 'wptests_';
 
 // Create the WP Test suite config
 $config_file = "<?php 
@@ -25,8 +23,7 @@ $config_file = "<?php
 		@define( 'DB_COLLATE', '' );
 		\$table_prefix  = 'wptests_';
 		@define( 'WP_TESTS_DOMAIN', '" . WP_TESTS_DOMAIN . "' );
-		@define( 'WP_TESTS_EMAIL', 'admin@kjero.dev' );
-		@define( 'WP_TESTS_TITLE', 'Kjero' );
+		@define( 'WP_TESTS_EMAIL', 'admin@test.dev' );
 		@define( 'WP_PHP_BINARY', 'php' );
 ";
 
@@ -34,11 +31,11 @@ if ( defined( 'WP_DEFAULT_THEME' ) ) {
 	$config_file .= "\n  @define( 'WP_DEFAULT_THEME', '" . WP_DEFAULT_THEME . "' );";
 }
 
-file_put_contents( $wp_tests_dir . 'wp-tests-config.php', $config_file );
+file_put_contents( WP_TESTS_DIR . 'wp-tests-config.php', $config_file );
 
 
 // Include the WP test suite functions
-require_once $wp_tests_dir . 'includes/functions.php';
+require_once WP_TESTS_DIR . 'includes/functions.php';
 
 /**
  * Loads all plugins needed for running the tests
@@ -47,10 +44,11 @@ function _manually_load_plugin() {
 	// Gforms
 	require_once __DIR__ . '/../../wp-separate-user-base.php';
 }
+
 tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );
 
 // Setup WordPress environment
-require $wp_tests_dir . 'includes/bootstrap.php';
+require WP_TESTS_DIR . 'includes/bootstrap.php';
 
 
 add_user_meta( 1, \WP_SUB\WP_Separate_User_Base::NETWORK_META_KEY, 1 );
@@ -61,7 +59,7 @@ update_network_option( 1, 'wp_sub_add_users_to_network', 1 );
 // DO NOT USE THIS IN PRODUCTION!
 tests_add_filter(
 	'wp_hash_password_options',
-	function() {
+	function () {
 		return array(
 			'cost' => 4,
 		);
