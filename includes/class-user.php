@@ -11,7 +11,7 @@ use WP_User_Query;
  */
 class User {
 	public function register_hooks() {
-		add_action( 'pre_get_users', array( $this, 'add_user_meta_query' ) );
+		add_action( 'pre_get_users', array( $this, 'add_user_meta_query' ), 9999 );
 		add_action( 'user_register', array( $this, 'add_user_access_meta' ) );
 	}
 
@@ -32,13 +32,7 @@ class User {
 			return;
 		}
 
-		$meta = $query->get( 'meta_query' );
-		if ( ! is_array( $meta ) ) {
-			$meta = array();
-		}
-
-		// Add meta query meta query array
-		$meta['user_separation'] = array(
+		$user_sep_query = array(
 			'relation' => 'OR',
 			array(
 				'key'   => WP_Separate_User_Base::NETWORK_META_KEY,
@@ -49,6 +43,24 @@ class User {
 				'value' => get_current_blog_id(),
 			),
 		);
+
+
+		$meta = $query->get( 'meta_query' );
+		if ( ! is_array( $meta ) ) {
+			$meta = array();
+		}
+
+		// Prevent nesting of our own query modifications
+		if ( array_key_exists( 'user_separation', $meta ) ) {
+			unset( $meta['user_separation'] );
+		}
+
+		// Wrap the original query
+		if ( ! empty( $meta ) ) {
+			$meta = array( 'wp_sub_org_query' => $meta );
+		}
+
+		$meta['user_separation'] = $user_sep_query;
 
 		$query->set( 'meta_query', $meta );
 	}

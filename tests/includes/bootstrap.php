@@ -24,6 +24,7 @@ $config_file = "<?php
 		\$table_prefix  = 'wptests_';
 		@define( 'WP_TESTS_DOMAIN', '" . WP_TESTS_DOMAIN . "' );
 		@define( 'WP_TESTS_EMAIL', 'admin@test.dev' );
+		@define( 'WP_TESTS_TITLE', 'Test page' );
 		@define( 'WP_PHP_BINARY', 'php' );
 ";
 
