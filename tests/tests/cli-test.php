@@ -2,9 +2,9 @@
 
 namespace WP_SUB\Tests;
 
-use PHPUnit\Runner\Exception;
-use WP_SUB\CLI,
-	WP_UnitTestCase;
+use Exception,
+    WP_SUB\CLI,
+	  WP_UnitTestCase;
 
 require_once BASE_DIR . '/vendor/wp-cli/wp-cli/php/class-wp-cli-command.php';
 require_once __DIR__ . '/../../includes/class-cli.php';
