@@ -26,6 +26,7 @@
             <group>admin-bar</group>
             <group>http</group>
             <group>customize</group>
+            <group>import</group>
         </exclude>
     </groups>
 
@@ -46,5 +47,6 @@
         <const name="WP_TESTS_DOMAIN" value="test.dev"/>
         <const name="WP_ENV" value="development"/>
         <const name="WP_RUN_CORE_TESTS" value="1" />
+        <!--<const name="BASE_DIR" value="/var/www" />--><!-- Uncomment to change WP test suite dir -->
     </php>
 </phpunit>

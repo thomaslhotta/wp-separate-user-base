@@ -51,7 +51,7 @@ class WP_Separate_User_Base {
 
 		if ( class_exists( 'WP_CLI_Command', false ) ) {
 			require_once __DIR__ .'/includes/class-cli.php';
-			WP_CLI::add_command( 'separate-user-base', 'WP_SUB\WP_SUP_CLI' );
+			WP_CLI::add_command( 'separate-user-base', 'WP_SUB\CLI' );
 		}
 	}
 }

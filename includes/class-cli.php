@@ -1,4 +1,6 @@
 <?php
+declare(strict_types = 1);
+
 namespace WP_SUB;
 
 use WP_SUB\WP_Separate_User_Base,
@@ -13,7 +15,7 @@ use WP_SUB\WP_Separate_User_Base,
  *
  * @package WP_SUB
  */
-class WP_SUP_CLI extends WP_CLI_Command {
+class CLI extends WP_CLI_Command {
 
 	/**
 	 * Adds a user to a network
@@ -38,14 +40,13 @@ class WP_SUP_CLI extends WP_CLI_Command {
 	public function add_user_to_network( $args, $assoc_args ) {
 		$network = $this->get_network( $args[0] );
 		$user = $this->get_user( $args[1] );
-
 		$networks = get_user_meta( $user->ID, WP_Separate_User_Base::NETWORK_META_KEY, false );
 		if ( in_array( $network->id, $networks ) ) {
 			$this->error( 'User %d already exists in network %s', $user->ID, $this->format_network_name( $network ) );
 		}
 
-		if ( add_user_meta( $user->ID, WP_Separate_User_Base::NETWORK_META_KEY, $network->id ) ) {
-			$this->error( 'Adding user %d to network %s failed', $user->ID, $this->format_network_name( $network ) );
+		if ( wp_sub_add_user_to_network( $user->ID, $network->id ) ) {
+			$this->success( 'Adding user %d to network %s failed', $user->ID, $this->format_network_name( $network ) );
 		} else {
 			$this->error( 'Adding user %d to network %s failed', $user->ID, $this->format_network_name( $network ) );
 		}
@@ -80,7 +81,7 @@ class WP_SUP_CLI extends WP_CLI_Command {
 			$this->error( 'User %d does not exist in network %s', $user->ID, $this->format_network_name( $network ) );
 		}
 
-		if ( delete_user_meta( $user->ID, WP_Separate_User_Base::NETWORK_META_KEY, $network->id ) ) {
+		if ( wp_sub_remove_user_from_network( $user->ID, $network->id ) ) {
 			$this->success( 'Deleted user %d from network %s', $user->ID, $this->format_network_name( $network ) );
 		} else {
 			$this->error( 'Deleting user %d from network %s failed', $user->ID, $this->format_network_name( $network ) );
@@ -116,7 +117,7 @@ class WP_SUP_CLI extends WP_CLI_Command {
 			$this->error( 'User %d already exists in site %s', $user->ID, $this->format_site_name( $site ) );
 		}
 
-		if ( add_user_meta( $user->ID, WP_Separate_User_Base::SITE_META_KEY, $site->id ) ) {
+		if ( wp_sub_add_user_to_site( $user->ID, $site->id ) ) {
 			$this->success( 'Added user %d to site %s', $user->ID, $this->format_site_name( $site ) );
 		} else {
 			$this->error( 'Adding user %d to site %s failed', $user->ID, $this->format_site_name( $site ) );
@@ -153,7 +154,7 @@ class WP_SUP_CLI extends WP_CLI_Command {
 			$this->error( 'User %d does not exist on site %s', $user->ID, $this->format_site_name( $site ) );
 		}
 
-		if ( delete_user_meta( $user->ID, WP_Separate_User_Base::SITE_META_KEY, $site->id ) ) {
+		if ( wp_sub_remove_user_from_site( $user->ID, $site->id ) ) {
 			$this->success( 'Removed user %d from site %s', $user->ID, $this->format_site_name( $site ) );
 		} else {
 			$this->error( 'Removing user %d from site %s failed', $user->ID, $this->format_site_name( $site ) );
@@ -247,7 +248,11 @@ class WP_SUP_CLI extends WP_CLI_Command {
 	public function enable_network_registration( $args, $assoc_args ) {
 		$network = $this->get_network( $args[0] );
 
-		if ( update_network_option( $network->id, 'wp_sub_add_users_to_network', 1 ) ) {
+		if ( get_network_option( $network->id, 'wp_sub_add_users_to_network' ) ) {
+			$this->error( 'Network registration already enabled for network %s', $this->format_network_name( $network ) );
+		}
+
+		if ( $r = add_network_option( $network->id, 'wp_sub_add_users_to_network', 1 ) ) {
 			$this->success( 'Enabled network registration for %s', $this->format_network_name( $network ) );
 		} else {
 			$this->error( 'Enabling network registration for network %s failed', $this->format_network_name( $network ) );
@@ -280,21 +285,21 @@ class WP_SUP_CLI extends WP_CLI_Command {
 	/**
 	 * Created a CLI success message
 	 */
-	protected function success() {
+	public function success() {
 		WP_CLI::success( call_user_func_array( 'sprintf', func_get_args() ) );
 	}
 
 	/**
 	 * Created a CLI error
 	 */
-	protected function error() {
+	public function error() {
 		WP_CLI::error( call_user_func_array( 'sprintf', func_get_args() ) );
 	}
 
 	/**
 	 * Returns the network for the given ID or triggers a CLI error
 	 *
-	 * @param array $args
+	 * @param int $id
 	 *
 	 * @return WP_Network
 	 */
@@ -349,14 +354,14 @@ class WP_SUP_CLI extends WP_CLI_Command {
 	 * @return WP_User|null
 	 */
 	protected function get_user( int $id ) {
-		add_filter( 'wp_sub_check_user_access', '__return_true' );
+		add_filter( 'wp_sub_user_exists', '__return_true' );
 
 		$user = get_user_by( 'id', $id );
 		if ( ! $user instanceof WP_User ) {
 			$this->error( 'User %d not found', $id );
 		}
 
-		remove_filter( 'wp_sub_check_user_access', '__return_true' );
+		remove_filter( 'wp_sub_user_exists', '__return_true' );
 
 		return $user;
 	}
