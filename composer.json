@@ -9,9 +9,9 @@
 	    "name": "wordpress/phpunit",
 	    "version": "4.9",
 	    "source": {
-	      "type": "svn",
-		  "url": "https://develop.svn.wordpress.org/",
-		  "reference": "tags/4.9.0/"
+	      "type": "git",
+		  "url": "git://develop.git.wordpress.org/ wordpress-develop",
+		  "reference": "tags/4.9.0"
 	    }
 	  }
 	}
