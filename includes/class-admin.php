@@ -4,6 +4,12 @@ namespace WP_SUB;
 use WP_SUB\WP_Separate_User_Base,
 	WP_Network;
 
+/**
+ * Adds WP-Admin functionality
+ *
+ * Class Admin
+ * @package WP_SUB
+ */
 class Admin {
 
 	public function register_hooks() {

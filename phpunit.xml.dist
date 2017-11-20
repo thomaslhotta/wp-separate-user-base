@@ -11,8 +11,10 @@
 
     <testsuites>
         <testsuite>
-            <directory suffix="test.php">./tests/tests/</directory>
-            <directory suffix=".php">./vendor/wordpress/phpunit/tests/phpunit/tests</directory>
+            <directory suffix=".php">/var/www/vendor/wordpress/phpunit/tests/phpunit/tests/meta</directory>
+            <directory suffix=".php">/var/www/vendor/wordpress/phpunit/tests/phpunit/tests/rest-api</directory>
+            <directory suffix=".php">/var/www/vendor/wordpress/phpunit/tests/phpunit/tests</directory>
+            <directory suffix="test.php">./tests/tests/</directory>mysql
         </testsuite>
     </testsuites>
 
@@ -23,9 +25,7 @@
             <group>ms-files</group>
             <group>external-http</group>
             <group>plugins</group>
-            <group>admin-bar</group>
             <group>http</group>
-            <group>customize</group>
             <group>import</group>
         </exclude>
     </groups>

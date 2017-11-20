@@ -7,11 +7,11 @@
 	  "type": "package",
 	  "package": {
 	    "name": "wordpress/phpunit",
-	    "version": "4.8.1",
+	    "version": "4.9",
 	    "source": {
 	      "type": "svn",
 		  "url": "https://develop.svn.wordpress.org/",
-		  "reference": "tags/4.8.1/"
+		  "reference": "tags/4.9.0/"
 	    }
 	  }
 	}
