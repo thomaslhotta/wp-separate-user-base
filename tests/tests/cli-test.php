@@ -58,7 +58,13 @@ class CLI_Test extends WP_UnitTestCase {
 		          ->will(
 			          $this->returnCallback(
 				          function() {
-					          return new \WP_CLI\NoOp();
+					            return new class {
+									public function tick() {
+									}
+
+									public function finish() {
+									}
+					          };
 				          }
 			          )
 		          );
