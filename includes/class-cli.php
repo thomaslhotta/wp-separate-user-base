@@ -8,7 +8,9 @@ use WP_SUB\WP_Separate_User_Base,
 	WP_CLI_Command,
 	WP_Network,
 	WP_Site,
-	WP_User;
+	WP_Site_Query,
+	WP_User,
+	Countable;
 
 /**
  * Handles user separation between networks and sites
@@ -38,17 +40,21 @@ class CLI extends WP_CLI_Command {
 	 * @param $assoc_args
 	 */
 	public function add_user_to_network( $args, $assoc_args ) {
-		$network = $this->get_network( $args[0] );
+		$network = $this->get_network( (int) $args[0] );
 		$user = $this->get_user( $args[1] );
+
+		$user_id = (int) $user->ID;
+
 		$networks = get_user_meta( $user->ID, WP_Separate_User_Base::NETWORK_META_KEY, false );
+
 		if ( in_array( $network->id, $networks ) ) {
-			$this->error( 'User %d already exists in network %s', $user->ID, $this->format_network_name( $network ) );
+			$this->error( 'User %d already exists in network %s', $user_id, $this->format_network_name( $network ) );
 		}
 
-		if ( wp_sub_add_user_to_network( $user->ID, $network->id ) ) {
-			$this->success( 'Adding user %d to network %s failed', $user->ID, $this->format_network_name( $network ) );
+		if ( wp_sub_add_user_to_network( $user_id, $network->id ) ) {
+			$this->success( 'Adding user %d to network %s', $user_id, $this->format_network_name( $network ) );
 		} else {
-			$this->error( 'Adding user %d to network %s failed', $user->ID, $this->format_network_name( $network ) );
+			$this->error( 'Adding user %d to network %s failed', $user_id, $this->format_network_name( $network ) );
 		}
 	}
 
@@ -176,14 +182,12 @@ class CLI extends WP_CLI_Command {
 	 *
 	 * @subcommand list-user-networks
 	 * @param $args
-	 * @param $assoc_args
 	 */
-	public function list_user_networks( $args, $assoc_args ) {
+	public function list_user_networks( $args ) {
 		$user = $this->get_user( $args[0] );
 		$networks = get_user_meta( $user->ID, WP_Separate_User_Base::NETWORK_META_KEY, false );
 
-		$table = $table = new \cli\Table();
-		$table->setHeaders( array( 'ID', 'Name', 'URL' ) );
+		$table = $this->create_table( array( 'ID', 'Name', 'URL' ) );
 		foreach ( $networks as $n_id ) {
 			$n = get_network( $n_id );
 			if ( $n instanceof WP_Network ) {
@@ -211,18 +215,16 @@ class CLI extends WP_CLI_Command {
 	 *
 	 * @subcommand list-user-sites
 	 * @param $args
-	 * @param $assoc_args
 	 */
-	public function list_user_sites( $args, $assoc_args ) {
+	public function list_user_sites( $args ) {
 		$user = $this->get_user( $args[0] );
 		$sites = get_user_meta( $user->ID, WP_Separate_User_Base::SITE_META_KEY, false );
 
-		$table = $table = new \cli\Table();
-		$table->setHeaders( array( 'ID', 'Name', 'URL', 'User role' ) );
+		$table = $this->create_table( array( 'ID', 'Name', 'URL', 'User role' ) );
 		foreach ( $sites as $id ) {
 			$s = get_site( $id );
 			if ( $s instanceof WP_Site ) {
-				$user->for_blog( $s->id );
+				$user->for_site( $s->id );
 				$table->addRow( array( $s->id, $s->blogname, get_home_url( $s->id ), join( ', ', $user->roles ) ) );
 			} else {
 				$table->addRow( array( $id, 'Site not found', '' ) );
@@ -230,6 +232,100 @@ class CLI extends WP_CLI_Command {
 		}
 
 		$table->display();
+	}
+
+	/**
+	 * Added users to sites and network based on their existing roles
+	 *
+	 * @subcommand add-users-from-roles
+	 */
+	public function add_users_to_sites_from_roles() {
+		$added_to_network = array();
+		$added_to_site = array();
+
+		$sites_query = new WP_Site_Query(
+			array(
+				'number' => false,
+				'update_site_cache' => false,
+			)
+		);
+
+		$found_sites = $sites_query->get_sites();
+
+		$progress = $this->create_progress_bar(  'Processing sites', $found_sites  );
+
+		foreach ( $found_sites as $site ) {
+			$progress->tick();
+
+			/* @var WP_Site $site */
+			$users = new \WP_User_Query(
+				array(
+					'blog_id' => $site->blog_id,
+					'number'  => false,
+					'fields'  => 'ids',
+					'wp_sub_disable_query_integration' => true,
+				)
+			);
+
+			$found_users = 0;
+			$add_users_to_network = get_network_option( $site->network_id, 'wp_sub_add_users_to_network' );
+
+			foreach ( $users->get_results() as $user_id ) {
+				$user_id = (int) $user_id;
+
+				if ( $add_users_to_network ) {
+					if ( ! isset( $added_to_network[ $site->network_id ] ) ) {
+						 $added_to_network[ $site->network_id ] = 0;
+					}
+
+					$added_to_network[ $site->network_id ] += (int) wp_sub_add_user_to_network(
+						$user_id,
+						(int) $site->network_id
+					);
+				} else {
+					$found_users += wp_sub_add_user_to_site( $user_id, (int) $site->blog_id );
+				}
+			}
+
+			if ( $found_users ) {
+				$added_to_site[ $site->blog_id ] = array(
+					$site->blog_id,
+					$site->blogname,
+					$site->siteurl,
+					$found_users,
+				);
+			}
+		}
+
+		$progress->finish();
+
+		if ( empty( $added_to_network ) && empty( $added_to_site ) ) {
+			$this->error( 'No users were added' );
+		}
+
+		if ( $added_to_site ) {
+			$this->success( 'Added users to %d sites', count( $added_to_site ) );
+			$site_table = $this->create_table( array( 'ID', 'Name', 'URL', 'Added users' ) );
+			$site_table->setRows( $added_to_site );
+			$site_table->display();
+		}
+
+		if ( $added_to_network ) {
+			$this->success( 'Added users to %d networks', $added_to_site );
+			$network_table = $this->create_table( array( 'ID', 'Name', 'URL', 'Added users' ) );
+			foreach ( $added_to_network as $id => $users ) {
+				$network = WP_Network::get_instance( $id );
+				$network_table->addRow(
+					array(
+						$id,
+						$network->site_name,
+						$network->domain . $network->path,
+						$users,
+					)
+				);
+			}
+			$network_table->display();
+		}
 	}
 
 	/**
@@ -297,6 +393,33 @@ class CLI extends WP_CLI_Command {
 	}
 
 	/**
+	 * Creates a table with the given headers
+	 *
+	 * @param array $headers
+	 *
+	 * @return \cli\Table
+	 */
+	public function create_table( array $headers ) {
+		$table = new \cli\Table();
+		$table->setHeaders( $headers );
+		return $table;
+	}
+
+	/**
+	 * @param string $message
+	 * @param $count
+	 *
+	 * @return \cli\progress\Bar
+	 */
+	public function create_progress_bar( string $message, $count ) {
+		if ( ! is_numeric( $count ) && $count instanceof Countable ) {
+			$count = count( $count );
+		}
+
+		return \WP_CLI\Utils\make_progress_bar( $message, $count );
+	}
+
+	/**
 	 * Returns the network for the given ID or triggers a CLI error
 	 *
 	 * @param int $id
@@ -349,14 +472,21 @@ class CLI extends WP_CLI_Command {
 	}
 
 	/**
-	 * @param int $id
+	 * @param int|string $id
 	 *
 	 * @return WP_User|null
 	 */
-	protected function get_user( int $id ) {
+	protected function get_user( $id ) {
 		add_filter( 'wp_sub_user_exists', '__return_true' );
 
-		$user = get_user_by( 'id', $id );
+		if ( is_numeric( $id ) ) {
+			$user = get_user_by( 'id', $id );
+		} else if ( filter_var( $id, FILTER_VALIDATE_EMAIL ) ) {
+			$user = get_user_by( 'email', $id );
+		} else {
+			$user = get_user_by( 'login', $id );
+		}
+
 		if ( ! $user instanceof WP_User ) {
 			$this->error( 'User %d not found', $id );
 		}

@@ -10,6 +10,7 @@ use WP_User_Query;
  * @package WP_SUB
  */
 class User {
+
 	public function register_hooks() {
 		add_action( 'pre_get_users', array( $this, 'add_user_meta_query' ), 9999 );
 		add_action( 'user_register', array( $this, 'add_user_access_meta' ) );
