@@ -1,7 +1,9 @@
 <?php
+
 namespace WP_SUB;
 
-use WP_User_Query;
+use WP_User_Query,
+	ReflectionClass;
 
 /**
  * Handles user modifications
@@ -11,9 +13,108 @@ use WP_User_Query;
  */
 class User {
 
+	protected $query_regex;
+
 	public function register_hooks() {
+		add_filter( 'query', array( $this, 'query' ) );
 		add_action( 'pre_get_users', array( $this, 'add_user_meta_query' ), 9999 );
 		add_action( 'user_register', array( $this, 'add_user_access_meta' ) );
+
+		$this->modify_cache_groups();
+		add_action( 'switch_blog', array( $this, 'modify_cache_groups' ) );
+	}
+
+	/**
+	 * Modifies persistent cache groups
+	 *
+	 * @throws \ReflectionException
+	 */
+	public function modify_cache_groups() {
+		$cache = $GLOBALS['wp_object_cache'];
+
+		$reflection = new ReflectionClass( $cache );
+		if ( ! $reflection->hasProperty( 'global_groups' ) ) {
+			wp_die( 'Your object cache plugin is not compatible with WP_Separate_User_Base' );
+		}
+
+		$global_groups = $reflection->getProperty( 'global_groups' );
+		$global_groups->setAccessible( true );
+		$groups = $global_groups->getValue( $cache );
+
+		unset( $groups['useremail'] );
+		unset( $groups['userlogins'] );
+
+		$global_groups->setValue( $cache, $groups );
+	}
+
+	/**
+	 * Hooks into all queries to modify the query created in WP_User::get_data_by
+	 *
+	 * @param $sql
+	 *
+	 * @return string
+	 */
+	public function query( $sql ) {
+		if ( preg_match( $this->get_query_regex(), $sql ) ) {
+			$sql = $this->add_meta_sql( $sql );
+		}
+
+		return $sql;
+	}
+
+	/**
+	 * Returns the regex pattern to match user queries.
+	 *
+	 * @return string
+	 */
+	protected function get_query_regex() : string {
+		global $wpdb;
+
+		if ( ! $this->query_regex ) {
+			$this->query_regex = sprintf(
+				'/^SELECT \* FROM %s WHERE (user_email|user_login) = \'.*\'$/',
+				preg_quote( $wpdb->users, '/' )
+			);
+		}
+
+		return $this->query_regex;
+	}
+
+	/**
+	 * Wraps the existing user query to check for the existence of the separation meta keys
+	 *
+	 * @param string $sql
+	 *
+	 * @return string
+	 */
+	protected function add_meta_sql( string $sql ) {
+		global $wpdb;
+
+		$meta = new \WP_Meta_Query(
+			array(
+				'relation' => 'OR',
+				array(
+					'key'   => WP_Separate_User_Base::SITE_META_KEY,
+					'value' => get_current_blog_id(),
+				),
+				array(
+					'key'   => WP_Separate_User_Base::NETWORK_META_KEY,
+					'value' => get_current_network_id(),
+				),
+			)
+		);
+
+		$meta_sql = $meta->get_sql( 'user', 'u', 'ID' );
+
+		return sprintf(
+			'SELECT * FROM %s WHERE ID IN (
+				SELECT u.ID FROM ( %s ) AS u %s %s
+			)',
+			$wpdb->users,
+			$sql,
+			$meta_sql['join'],
+			$meta_sql['where']
+		);
 	}
 
 	/**
@@ -21,7 +122,7 @@ class User {
 	 *
 	 * @param WP_User_Query $query
 	 */
-	function add_user_meta_query( WP_User_Query $query ) {
+	public function add_user_meta_query( WP_User_Query $query ) {
 
 		// Do not modify queries when on the network admin
 		if ( is_network_admin() ) {

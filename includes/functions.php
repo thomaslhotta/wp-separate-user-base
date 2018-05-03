@@ -100,6 +100,7 @@ function wp_sub_remove_user_from_network( int $user_id, int $network_id ) : bool
  */
 function wp_sub_user_exists_on_site( int $user_id, int $site_id ) : bool {
 	$allowed = in_array( $site_id, get_user_meta( $user_id, \WP_SUB\WP_Separate_User_Base::SITE_META_KEY, false ) );
+
 	return apply_filters( 'wp_sub_user_exists_on_network', $allowed, $user_id, $site_id );
 }
 
