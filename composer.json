@@ -19,6 +19,8 @@
   "require": {},
   "require-dev": {
     "wordpress/phpunit"  : "4.*",
-    "wp-cli/wp-cli": "v1.*"
+    "wp-cli/wp-cli": "v1.*",
+	"phpunit/phpunit": "6.*",
+    "phpunit/phpcov": "4.*"
   }
 }
