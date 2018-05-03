@@ -31,13 +31,16 @@
     </groups>
 
     <filter>
+        <whitelist processUncoveredFilesFromWhitelist="false">
+            <directory suffix=".php">./includes/</directory>
+         	<directory suffix=".php">./vendor/wordpress/phpunit/src</directory>
+        </whitelist>
+
         <blacklist>
-        	<directory>.vendor/</directory>
+        	<directory>./vendor/</directory>
+            <directory>./tests/</directory>
         </blacklist>
     </filter>
-    <!--<logging>
-       <log type="coverage-html" target="log/" charset="UTF-8" yui="true" />
-    </logging>-->
 
     <php>
         <const name="DB_NAME" value="circle_test"/>
