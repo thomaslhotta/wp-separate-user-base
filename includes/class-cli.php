@@ -380,6 +380,8 @@ class CLI extends WP_CLI_Command {
 
 	/**
 	 * Created a CLI success message
+	 *
+	 * @codeCoverageIgnore
 	 */
 	public function success() {
 		WP_CLI::success( call_user_func_array( 'sprintf', func_get_args() ) );
@@ -387,6 +389,8 @@ class CLI extends WP_CLI_Command {
 
 	/**
 	 * Created a CLI error
+	 *
+	 * @codeCoverageIgnore
 	 */
 	public function error() {
 		WP_CLI::error( call_user_func_array( 'sprintf', func_get_args() ) );
@@ -398,6 +402,7 @@ class CLI extends WP_CLI_Command {
 	 * @param array $headers
 	 *
 	 * @return \cli\Table
+	 * @codeCoverageIgnore
 	 */
 	public function create_table( array $headers ) {
 		$table = new \cli\Table();
@@ -410,6 +415,7 @@ class CLI extends WP_CLI_Command {
 	 * @param $count
 	 *
 	 * @return \cli\progress\Bar
+	 * @codeCoverageIgnore
 	 */
 	public function create_progress_bar( string $message, $count ) {
 		if ( ! is_numeric( $count ) && $count instanceof Countable ) {
@@ -478,6 +484,7 @@ class CLI extends WP_CLI_Command {
 	 */
 	protected function get_user( $id ) {
 		add_filter( 'wp_sub_user_exists', '__return_true' );
+		add_filter( 'wp_sub_enabled', '__return_false' );
 
 		if ( is_numeric( $id ) ) {
 			$user = get_user_by( 'id', $id );
@@ -488,10 +495,11 @@ class CLI extends WP_CLI_Command {
 		}
 
 		if ( ! $user instanceof WP_User ) {
-			$this->error( 'User %d not found', $id );
+			$this->error( 'User %s not found', $id );
 		}
 
 		remove_filter( 'wp_sub_user_exists', '__return_true' );
+		remove_filter( 'wp_sub_enabled', '__return_false' );
 
 		return $user;
 	}

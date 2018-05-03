@@ -4,6 +4,15 @@
  */
 
 /**
+ * Returns true if wp_sub is enabled
+ *
+ * @return bool
+ */
+function wp_sub_enabled() {
+	return apply_filters( 'wp_sub_enabled', true );
+}
+
+/**
  * Returns true if the user exists on the given network and site
  *
  * @param int $user_id

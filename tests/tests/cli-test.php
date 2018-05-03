@@ -99,7 +99,12 @@ class CLI_Test extends WP_UnitTestCase {
 
 		add_filter( 'wp_sub_add_user_access_meta', '__return_false' );
 
-		$this->user = self::factory()->user->create();
+		$this->user = self::factory()->user->create(
+			array(
+				'user_email' => 'user1@test.local',
+				'user_login' => 'user1',
+			)
+		);
 	}
 
 	/*
@@ -108,6 +113,20 @@ class CLI_Test extends WP_UnitTestCase {
 
 	public function test_add_user_to_network_success() {
 		$this->cli->add_user_to_network( array( 1, $this->user ), array() );
+
+		$this->assertTrue( wp_sub_user_exists_on_network( $this->user, 1 ) );
+		$this->assertNotEmpty( $this->success );
+	}
+
+	public function test_add_user_to_network_success_by_email() {
+		$this->cli->add_user_to_network( array( 1, 'user1@test.local' ), array() );
+
+		$this->assertTrue( wp_sub_user_exists_on_network( $this->user, 1 ) );
+		$this->assertNotEmpty( $this->success );
+	}
+
+	public function test_add_user_to_network_success_by_login() {
+		$this->cli->add_user_to_network( array( 1, 'user1' ), array() );
 
 		$this->assertTrue( wp_sub_user_exists_on_network( $this->user, 1 ) );
 		$this->assertNotEmpty( $this->success );

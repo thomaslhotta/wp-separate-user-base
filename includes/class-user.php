@@ -13,8 +13,15 @@ use WP_User_Query,
  */
 class User {
 
+	/**
+	 * @var string
+	 */
 	protected $query_regex;
 
+	/**
+	 * @codeCoverageIgnore
+	 * @throws \ReflectionException
+	 */
 	public function register_hooks() {
 		add_filter( 'query', array( $this, 'query' ) );
 		add_action( 'pre_get_users', array( $this, 'add_user_meta_query' ), 9999 );
@@ -55,7 +62,7 @@ class User {
 	 * @return string
 	 */
 	public function query( $sql ) {
-		if ( preg_match( $this->get_query_regex(), $sql ) ) {
+		if ( preg_match( $this->get_query_regex(), $sql ) && wp_sub_enabled() ) {
 			$sql = $this->add_meta_sql( $sql );
 		}
 
@@ -131,6 +138,10 @@ class User {
 
 		// Allows the modifications to be disabled by adding the 'wp_sub_disable_query_integration' query arg
 		if ( apply_filters( 'wp_sub_disable_query_integration', $query->get( 'wp_sub_disable_query_integration' ), $query ) ) {
+			return;
+		}
+
+		if ( ! wp_sub_enabled() ) {
 			return;
 		}
 

@@ -102,6 +102,41 @@ class User_Test extends WP_UnitTestCase {
 		$this->assertContains( $u1, $users );
 	}
 
+	public function test_add_user_meta_query_wrapping() {
+		add_filter( 'wp_sub_add_user_access_meta', '__return_false' );
+
+		$u1 = self::factory()->user->create();
+		add_user_meta( $u1, 'testval', 1 );
+		$u2 = self::factory()->user->create();
+
+		remove_filter( 'wp_sub_add_user_access_meta', '__return_false' );
+
+		$site = self::factory()->blog->create();
+
+		wp_sub_add_user_to_site( $u1, $site );
+
+		switch_to_blog( $site );
+
+		$query = new WP_User_Query(
+			array(
+				'blog_id'    => 0,
+				'fields'     => 'IDs',
+				'include'    => array( $u1, $u2 ), // User 1 is created before we can set up our conditions
+				'meta_query' => array(
+					array(
+						'key' => 'testval',
+					),
+				),
+			)
+		);
+		$users = $query->get_results();
+
+		restore_current_blog();
+
+		$this->assertCount( 1, $users );
+		$this->assertContains( $u1, $users );
+	}
+
 	public function test_add_user_access_meta_disabled() {
 		add_filter( 'wp_sub_add_user_access_meta', '__return_false' );
 

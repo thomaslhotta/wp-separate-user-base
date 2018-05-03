@@ -10,11 +10,13 @@
          beStrictAboutTestsThatDoNotTestAnything="false">
 
     <testsuites>
-        <testsuite>
+        <testsuite name="wp_sub">
+            <directory suffix="test.php">./tests/tests/</directory>
+        </testsuite>
+        <testsuite name="wordpress">
             <directory suffix=".php">/var/www/vendor/wordpress/phpunit/tests/phpunit/tests/meta</directory>
             <directory suffix=".php">/var/www/vendor/wordpress/phpunit/tests/phpunit/tests/rest-api</directory>
             <directory suffix=".php">/var/www/vendor/wordpress/phpunit/tests/phpunit/tests</directory>
-            <directory suffix="test.php">./tests/tests/</directory>mysql
         </testsuite>
     </testsuites>
 
