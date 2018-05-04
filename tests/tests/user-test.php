@@ -314,6 +314,9 @@ class User_Test extends WP_UnitTestCase {
 		$this->assert_get_data_by_cached( 'slug', 'u1', $user_id );
 	}
 
+	/**
+	 * @covers ::check_password_reset_key
+	 */
 	public function test_check_password_reset_key_signature() {
 		global $wpdb;
 
@@ -332,6 +335,9 @@ class User_Test extends WP_UnitTestCase {
 		$this->assertEquals( $user->ID, $user_checked->ID );
 	}
 
+	/**
+	 * @covers ::check_password_reset_key
+	 */
 	public function test_check_password_reset_key_login_collision() {
 		$user_def = array( 'user_login' => 'test123' );
 		self::factory()->user->create( $user_def );

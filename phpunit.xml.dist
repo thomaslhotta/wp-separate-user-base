@@ -29,6 +29,7 @@
             <group>plugins</group>
             <group>http</group>
             <group>import</group>
+            <group>widgets</group> <!-- Causes error with phpunit -->
         </exclude>
     </groups>
 
