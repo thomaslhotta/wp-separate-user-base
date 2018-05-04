@@ -14,7 +14,7 @@ use WP_User_Query,
 class User {
 
 	/**
-	 * @var string
+	 * @var string[]
 	 */
 	protected $query_regex;
 
@@ -62,8 +62,18 @@ class User {
 	 * @return string
 	 */
 	public function query( $sql ) {
-		if ( preg_match( $this->get_query_regex(), $sql ) && wp_sub_enabled() ) {
-			$sql = $this->add_meta_sql( $sql );
+		global $wpdb;
+
+		// Prevent more expensive regex from running if not a user query
+		if ( 0 !== strpos( $sql, 'SELECT' ) || false === 'FROM ' . $wpdb->users ) {
+			return $sql;
+		}
+
+		foreach ( $this->get_query_regex() as $pattern ) {
+			if ( preg_match( $pattern, $sql ) && wp_sub_enabled() ) {
+				$sql = $this->add_meta_sql( $sql );
+				break;
+			}
 		}
 
 		return $sql;
@@ -72,15 +82,22 @@ class User {
 	/**
 	 * Returns the regex pattern to match user queries.
 	 *
-	 * @return string
+	 * @return string[]
 	 */
-	protected function get_query_regex() : string {
+	protected function get_query_regex() {
 		global $wpdb;
 
 		if ( ! $this->query_regex ) {
-			$this->query_regex = sprintf(
-				'/^SELECT \* FROM %s WHERE (user_email|user_login) = \'.*\'$/',
-				preg_quote( $wpdb->users, '/' )
+			$this->query_regex = array(
+				sprintf(
+					'/^SELECT \* FROM %s WHERE (user_email|user_login) = \'.*\'$/',
+					preg_quote( $wpdb->users, '/' )
+				),
+				sprintf(
+					'/^SELECT ID, user_activation_key FROM %s WHERE user_login = \'.*\'$/',
+					preg_quote( $wpdb->users, '/' )
+				),
+
 			);
 		}
 
