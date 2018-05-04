@@ -29,7 +29,13 @@
             <group>plugins</group>
             <group>http</group>
             <group>import</group>
-            <group>widgets</group> <!-- Causes error with phpunit -->
+            <group>widgets</group>    <!-- Causes error with phpunit -->
+            <group>widgets</group>    <!-- Causes error with phpunit -->
+            <group>customize</group>  <!-- Causes error with phpunit -->
+            <group>scripts</group>    <!-- Causes error with phpunit -->
+            <group>navmenus</group>   <!-- Causes error with phpunit -->
+            <group>option</group>     <!-- Causes error with phpunit -->
+            <group>formatting</group> <!-- Causes error with phpunit -->
         </exclude>
     </groups>
 

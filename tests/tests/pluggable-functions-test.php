@@ -43,6 +43,10 @@ class Pluggable_Functions_Test extends WP_UnitTestCase {
 		wp_cache_flush();
 	}
 
+	/**
+	 * @covers ::get_user_by
+	 * @covers WP_User::get_data_by
+	 */
 	public function test_get_user_by_not_on_network() {
 		$this->users_dont_exist_on_network( 'id', [ $this->user_1, $this->user_2 ] );
 		$this->users_dont_exist_on_network( 'login', [ 'user1', 'user2' ] );
@@ -50,6 +54,9 @@ class Pluggable_Functions_Test extends WP_UnitTestCase {
 		$this->users_dont_exist_on_network( 'slug', [ 'u1', 'u2' ] );
 	}
 
+	/**
+	 * @covers ::get_user_by
+	 */
 	public function test_get_user_by_invalid_value() {
 		$this->users_dont_exist_on_network( 'id', [ 999 ] );
 		$this->users_dont_exist_on_network( 'login', [ 'user999' ] );
@@ -57,6 +64,9 @@ class Pluggable_Functions_Test extends WP_UnitTestCase {
 		$this->users_dont_exist_on_network( 'slug', [ 'u999' ] );
 	}
 
+	/**
+	 * @covers ::get_user_by
+	 */
 	public function test_get_user_by_user_on_networks() {
 		wp_sub_add_user_to_network( $this->user_1, 1 );
 
@@ -79,6 +89,9 @@ class Pluggable_Functions_Test extends WP_UnitTestCase {
 		$this->users_exist( 'slug', [ 'u1' => $this->user_1 ] );
 	}
 
+	/**
+	 * @covers ::get_user_by
+	 */
 	public function test_user_on_site() {
 		wp_sub_add_user_to_site( $this->user_1, $this->blog_2 );
 
@@ -95,6 +108,9 @@ class Pluggable_Functions_Test extends WP_UnitTestCase {
 		$this->users_exist( 'slug', [ 'u1' => $this->user_1 ] );
 	}
 
+	/**
+	 * @covers ::get_user_by
+	 */
 	public function test_get_user_by_id_collisions() {
 		wp_sub_add_user_to_site( $this->user_1, 1 );
 		wp_sub_add_user_to_site( $this->user_2, 1 );
