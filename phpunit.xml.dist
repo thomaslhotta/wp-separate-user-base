@@ -36,6 +36,7 @@
             <group>navmenus</group>   <!-- Causes error with phpunit -->
             <group>option</group>     <!-- Causes error with phpunit -->
             <group>formatting</group> <!-- Causes error with phpunit -->
+            <group>themes</group>     <!-- Causes error with phpunit -->
         </exclude>
     </groups>
 

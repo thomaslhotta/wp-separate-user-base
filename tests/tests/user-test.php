@@ -201,6 +201,8 @@ class User_Test extends WP_UnitTestCase {
 
 	/**
 	 * Tests that the WP_User::get_data_by query has not changed
+	 *
+	 * @covers WP_User::get_data_by
 	 */
 	public function test_WP_User_get_data_by_signature() {
 		global $wpdb;
@@ -217,6 +219,9 @@ class User_Test extends WP_UnitTestCase {
 		);
 	}
 
+	/**
+	 * @covers WP_User::get_data_by
+	 */
 	public function test_WP_User_get_data_by_caching_id() {
 		$blog_2 = self::factory()->blog->create();
 
@@ -241,6 +246,9 @@ class User_Test extends WP_UnitTestCase {
 		$this->assert_get_data_by_cached( 'id' , $user_id, $user_id );
 	}
 
+	/**
+	 * @covers WP_User::get_data_by
+	 */
 	public function test_WP_User_get_data_by_caching_login() {
 		$blog_2 = self::factory()->blog->create();
 
@@ -266,6 +274,9 @@ class User_Test extends WP_UnitTestCase {
 		$this->assert_get_data_by_not_cached( 'login', 'user1', $user_id );
 	}
 
+	/**
+	 * @covers WP_User::get_data_by
+	 */
 	public function test_WP_User_get_data_by_caching_email() {
 		$blog_2 = self::factory()->blog->create();
 
@@ -290,6 +301,9 @@ class User_Test extends WP_UnitTestCase {
 		$this->assert_get_data_by_not_cached( 'email', 'user1@test.local', $user_id );
 	}
 
+	/**
+	 * @covers WP_User::get_data_by
+	 */
 	public function test_WP_User_get_data_by_caching_slug() {
 		$blog_2 = self::factory()->blog->create();
 
