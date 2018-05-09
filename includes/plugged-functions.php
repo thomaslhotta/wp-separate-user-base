@@ -20,7 +20,15 @@ function get_user_by( $field, $value ) {
 	$user = new WP_User;
 	$user->init( $userdata );
 
-	if ( ! wp_sub_user_exists( $user->ID ) ) {
+	$bypass_check_functions = array( 'username_exists' );
+	$bypass_check = false;
+
+	$last_call = debug_backtrace()[1];
+	if ( ! isset( $last_call['class'] ) && in_array( $last_call['function'], $bypass_check_functions ) ) {
+		$bypass_check = true;
+	}
+
+	if ( ! $bypass_check && ! wp_sub_user_exists( $user->ID ) ) {
 		return false;
 	}
 

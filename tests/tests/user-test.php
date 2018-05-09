@@ -162,20 +162,20 @@ class User_Test extends WP_UnitTestCase {
 	public function test_cache_modification() {
 		$blog2 = self::factory()->blog->create();
 
-		$this->assertTrue( wp_cache_set( 'testkey', 'test_data', 'userlogins' ) );
+		$this->assertTrue( wp_cache_set( 'testkey', 'test_data', 'useremail' ) );
 
-		$this->assertEquals( 'test_data', wp_cache_get( 'testkey', 'userlogins' ) );
+		$this->assertEquals( 'test_data', wp_cache_get( 'testkey', 'useremail' ) );
 
 		switch_to_blog( $blog2 );
 
 		$found = null;
-		$this->assertFalse( wp_cache_get( 'testkey', 'userlogins', false, $found ) );
+		$this->assertFalse( wp_cache_get( 'testkey', 'useremail', false, $found ) );
 		$this->assertFalse( $found );
 
 		restore_current_blog();
 
 		$found = null;
-		$this->assertEquals( 'test_data', wp_cache_get( 'testkey', 'userlogins', false, $found ) );
+		$this->assertEquals( 'test_data', wp_cache_get( 'testkey', 'useremail', false, $found ) );
 		$this->assertTrue( $found );
 	}
 
@@ -249,34 +249,6 @@ class User_Test extends WP_UnitTestCase {
 	/**
 	 * @covers WP_User::get_data_by
 	 */
-	public function test_WP_User_get_data_by_caching_login() {
-		$blog_2 = self::factory()->blog->create();
-
-		$queries = $this->hook_queries();
-
-		$user_id = self::factory()->user->create(
-			array(
-				'user_login'    => 'user1',
-				'user_email'    => 'user1@test.local',
-				'user_nicename' => 'u1',
-			)
-		);
-
-		wp_sub_add_user_to_network( $user_id,1 );
-
-		wp_cache_flush();
-
-		$this->assert_get_data_by_not_cached( 'login', 'user1', $user_id );
-		$this->assert_get_data_by_cached( 'login', 'user1', $user_id );
-
-		switch_to_blog( $blog_2 );
-
-		$this->assert_get_data_by_not_cached( 'login', 'user1', $user_id );
-	}
-
-	/**
-	 * @covers WP_User::get_data_by
-	 */
 	public function test_WP_User_get_data_by_caching_email() {
 		$blog_2 = self::factory()->blog->create();
 
@@ -328,44 +300,6 @@ class User_Test extends WP_UnitTestCase {
 		$this->assert_get_data_by_cached( 'slug', 'u1', $user_id );
 	}
 
-	/**
-	 * @covers ::check_password_reset_key
-	 */
-	public function test_check_password_reset_key_signature() {
-		global $wpdb;
-
-		$user = self::factory()->user->create_and_get();
-		$key = get_password_reset_key( $user );
-
-		$queries = $this->hook_queries();
-
-		$user_checked = check_password_reset_key( $key, $user->user_login );
-
-		$this->assertEquals(
-			$wpdb->prepare( "SELECT ID, user_activation_key FROM $wpdb->users WHERE user_login = %s", $user->user_login ),
-			$queries[0]
-		);
-
-		$this->assertEquals( $user->ID, $user_checked->ID );
-	}
-
-	/**
-	 * @covers ::check_password_reset_key
-	 */
-	public function test_check_password_reset_key_login_collision() {
-		$user_def = array( 'user_login' => 'test123' );
-		self::factory()->user->create( $user_def );
-
-		switch_to_blog( self::factory()->blog->create() );
-
-		$user2 = self::factory()->user->create_and_get( $user_def );
-
-		$key = get_password_reset_key( $user2 );
-		$user_checked = check_password_reset_key( $key, $user2->user_login );
-
-		$this->assertEquals( $user2->ID, $user_checked->ID );
-	}
-
 	protected function assert_get_data_by_cached( $by, $id, $check_user_id ) {
 		global $wp_object_cache;
 
@@ -391,8 +325,8 @@ class User_Test extends WP_UnitTestCase {
 		$hits   = $wp_object_cache->cache_hits;
 
 		$data = \WP_User::get_data_by( $by, $id );
-		$this->assertEquals( $misses + 1, $wp_object_cache->cache_misses );
-		$this->assertEquals( $hits, $wp_object_cache->cache_hits );
+		$this->assertEquals( $misses + 1, $wp_object_cache->cache_misses, 'Expected cache miss' );
+		$this->assertEquals( $hits, $wp_object_cache->cache_hits, 'Expected cache hit' );
 
 		$this->assertContains( "SELECT * FROM $wpdb->users WHERE", reset( $query ) );
 		$this->assertContains( (string) $id, reset( $query ) );

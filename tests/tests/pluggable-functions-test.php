@@ -111,7 +111,7 @@ class Pluggable_Functions_Test extends WP_UnitTestCase {
 	/**
 	 * @covers ::get_user_by
 	 */
-	public function test_get_user_by_id_collisions() {
+	public function test_get_user_by_collisions() {
 		wp_sub_add_user_to_site( $this->user_1, 1 );
 		wp_sub_add_user_to_site( $this->user_2, 1 );
 
@@ -119,7 +119,7 @@ class Pluggable_Functions_Test extends WP_UnitTestCase {
 
 		$this->user_3 = self::factory()->user->create(
 			array(
-				'user_login'    => 'user1',
+				'user_login'    => 'user1.1',
 				'user_email'    => 'user1@test.local',
 				'user_nicename' => 'u3',
 			)
@@ -130,16 +130,47 @@ class Pluggable_Functions_Test extends WP_UnitTestCase {
 		$this->assertInternalType( 'int', $this->user_3 );
 
 		$this->users_exist( 'id', array( $this->user_3 => $this->user_3 ) );
-		$this->users_exist( 'login', array( 'user1' => $this->user_3 ) );
-		$this->users_exist( 'email', array( 'user1@test.local' => $this->user_3 ) );
+		$this->users_exist( 'login', array( 'user1.1' => $this->user_3 ) );
+		$this->users_exist( 'email', array( 'user1@test.local' => $this->user_3 ) ); // Same email, but different user
 		$this->users_exist( 'slug', array( 'u3' => $this->user_3 ) );
 
 		$this->users_dont_exists( 'id', array( $this->user_1, $this->user_2 ) );
 		$this->users_dont_exists( 'login', array( 'user2' ) );
 		$this->users_dont_exists( 'email', array( 'user2@test.local' ) );
 		$this->users_dont_exists( 'slug', array( 'u1', 'u2' ) );
-
 	}
+
+	/**
+	 * @covers ::username_exists
+	 */
+	public function test_username_exists() {
+		wp_sub_add_user_to_site( $this->user_1, $this->blog_2 );
+		switch_to_blog( $this->blog_2 );
+
+		$this->users_exist( 'login', array( 'user1' => $this->user_1 ) );
+		$this->users_dont_exists( 'login', array( 'user2' ) );
+
+		$this->assertEquals( $this->user_2, username_exists( 'user2' ) );
+	}
+
+	/**
+	 * @covers ::username_exists
+	 */
+	public function test_prevent_user_with_same_user_login() {
+		wp_sub_add_user_to_site( $this->user_1, $this->blog_2 );
+		switch_to_blog( $this->blog_2 );
+
+		/* @var \WP_Error $error */
+		$error = self::factory()->user->create(
+			array(
+				'user_login'    => 'user1',
+			)
+		);
+
+		$this->assertInstanceOf( 'WP_Error', $error );
+		$this->assertContains( 'existing_user_login', $error->get_error_codes() );
+	}
+
 
 	protected function users_dont_exist_on_network( $by, array $ids ) {
 		$this->users_dont_exists( $by, $ids );

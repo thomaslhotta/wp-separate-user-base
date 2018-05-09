@@ -49,7 +49,6 @@ class User {
 		$groups = $global_groups->getValue( $cache );
 
 		unset( $groups['useremail'] );
-		unset( $groups['userlogins'] );
 
 		$global_groups->setValue( $cache, $groups );
 	}
@@ -90,14 +89,9 @@ class User {
 		if ( ! $this->query_regex ) {
 			$this->query_regex = array(
 				sprintf(
-					'/^SELECT \* FROM %s WHERE (user_email|user_login) = \'.*\'$/',
+					'/^SELECT \* FROM %s WHERE (user_email) = \'.*\'$/',
 					preg_quote( $wpdb->users, '/' )
 				),
-				sprintf(
-					'/^SELECT ID, user_activation_key FROM %s WHERE user_login = \'.*\'$/',
-					preg_quote( $wpdb->users, '/' )
-				),
-
 			);
 		}
 
