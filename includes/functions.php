@@ -9,6 +9,10 @@
  * @return bool
  */
 function wp_sub_enabled() {
+	if ( is_network_admin() ) {
+		return false;
+	}
+
 	return apply_filters( 'wp_sub_enabled', true );
 }
 

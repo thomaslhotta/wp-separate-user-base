@@ -21,11 +21,16 @@ function get_user_by( $field, $value ) {
 	$user->init( $userdata );
 
 	$bypass_check_functions = array( 'username_exists' );
-	$bypass_check = false;
+	$bypass_check = ! wp_sub_enabled();
 
-	$last_call = debug_backtrace()[1];
-	if ( ! isset( $last_call['class'] ) && in_array( $last_call['function'], $bypass_check_functions ) ) {
-		$bypass_check = true;
+	$backtrace = debug_backtrace();
+
+	if ( isset( $backtrace[1] ) ) {
+		$last_call = $backtrace[1];
+
+		if ( ! isset( $last_call['class'] ) && in_array( $last_call['function'], $bypass_check_functions ) ) {
+			$bypass_check = true;
+		}
 	}
 
 	if ( ! $bypass_check && ! wp_sub_user_exists( $user->ID ) ) {
