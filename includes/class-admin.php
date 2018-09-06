@@ -18,8 +18,51 @@ class Admin {
 	}
 
 	public function add_network_column( array $columns ) {
+		add_filter( 'get_blogs_of_user', array( $this, 'get_blogs_of_user' ), 10, 3 );
+
 		$columns['network'] = __( 'Network' );
 		return $columns;
+	}
+
+	public function get_blogs_of_user( $sites, $user_id, $all ) {
+		$user_site_ids = get_user_meta( $user_id, WP_Separate_User_Base::SITE_META_KEY, false );
+
+		$sites_in_list = wp_list_pluck( $sites, 'userblog_id' );
+
+		$sites_to_add = array_diff( $user_site_ids, $sites_in_list );
+		if ( empty( $sites_to_add ) ) {
+			return $sites;
+		}
+
+		$args = array(
+			'number'   => '',
+			'site__in' => array_diff( $user_site_ids, $sites_in_list ),
+		);
+
+		if ( ! $all ) {
+			$args['archived'] = 0;
+			$args['spam']     = 0;
+			$args['deleted']  = 0;
+		}
+
+
+		foreach ( get_sites( $args ) as $site ) {
+			$sites[ $site->id ] = (object) array(
+				'userblog_id' => $site->id,
+				'blogname'    => $site->blogname,
+				'domain'      => $site->domain,
+				'path'        => $site->path,
+				'site_id'     => $site->network_id,
+				'siteurl'     => $site->siteurl,
+				'archived'    => $site->archived,
+				'mature'      => $site->mature,
+				'spam'        => $site->spam,
+				'deleted'     => $site->deleted,
+			);
+		}
+
+		return $sites;
+
 	}
 
 	public function render_network_column( $content, $column_name, $user_id ) {
@@ -51,4 +94,5 @@ class Admin {
 
 		return sprintf( '<ul>%s</ul>', $network_links );
 	}
+
 }

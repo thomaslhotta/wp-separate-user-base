@@ -42,12 +42,16 @@ class WP_Separate_User_Base {
 		require __DIR__ . '/includes/plugged-functions.php';
 		require __DIR__ . '/includes/class-user.php';
 		require __DIR__ . '/includes/class-admin.php';
+		require __DIR__ . '/includes/class-authentication.php';
 
 		$user = new User();
 		$user->register_hooks();
 
 		$admin = new Admin();
 		$admin->register_hooks();
+
+		$authentication = new Authentication();
+		$authentication->register_hooks();
 
 		if ( class_exists( 'WP_CLI_Command', false ) ) {
 			require_once __DIR__ .'/includes/class-cli.php';

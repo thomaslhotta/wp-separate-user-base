@@ -66,9 +66,12 @@ function wp_sub_user_exists( int $user_id, int $network = 0, int $site = 0 ) : b
  *
  * @return bool
  */
-function wp_sub_user_exists_on_network( int $user_id, int $network ) : bool {
-	$allowed = in_array( $network, get_user_meta( $user_id, \WP_SUB\WP_Separate_User_Base::NETWORK_META_KEY, false ) );
-	return apply_filters( 'wp_sub_user_exists_on_network', $allowed, $user_id, $network );
+function wp_sub_user_exists_on_network( int $user_id, int $network_id ) : bool {
+	$networks = (array) get_user_meta( $user_id, \WP_SUB\WP_Separate_User_Base::NETWORK_META_KEY, false );
+	$networks = array_filter( $networks );
+
+	$allowed = in_array( $network_id, $networks );
+	return apply_filters( 'wp_sub_user_exists_on_network', $allowed, $user_id, $network_id );
 }
 
 /**
@@ -147,4 +150,39 @@ function wp_sub_add_user_to_site( int $user_id, int $site_id ) : bool {
  */
 function wp_sub_remove_user_from_site( int $user_id, int $site_id ) : bool {
 	return delete_user_meta( $user_id, \WP_SUB\WP_Separate_User_Base::SITE_META_KEY, $site_id );
+}
+
+/**
+ * Returns query parameters for a query the fetches users the given user has access to.
+ *
+ * @param null $current_user
+ */
+function wp_sub_get_accessible_users_query_args( int $current_user ) {
+	$blogs = wp_list_pluck(
+		get_blogs_of_user( $current_user, true ),
+		'userblog_id'
+	);
+
+	$args = [
+		'wp_sub_disable_query_integration' => true,
+		'meta_query' => [
+			'wp_sub' => [
+				'relation' => 'OR',
+				[
+					'key' => \WP_SUB\WP_Separate_User_Base::SITE_META_KEY,
+					'value' => $blogs,
+					'compare' => 'IN',
+				],
+			],
+		],
+	];
+
+	if ( wp_sub_user_exists_on_network( $current_user, get_current_site()->id ) ) {
+		$args['meta_query']['wp_sub'][] = [
+			'key' => \WP_SUB\WP_Separate_User_Base::NETWORK_META_KEY,
+			'value' => get_current_site()->id,
+		];
+	}
+
+	return $args;
 }

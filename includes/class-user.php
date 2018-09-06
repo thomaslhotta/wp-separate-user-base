@@ -23,10 +23,14 @@ class User {
 	 * @throws \ReflectionException
 	 */
 	public function register_hooks() {
+		// User query integration
 		add_filter( 'query', array( $this, 'query' ) );
 		add_action( 'pre_get_users', array( $this, 'add_user_meta_query' ), 9999 );
+
+		// User creation
 		add_action( 'user_register', array( $this, 'add_user_access_meta' ) );
 
+		// Caching behavior changes
 		$this->modify_cache_groups();
 		add_action( 'switch_blog', array( $this, 'modify_cache_groups' ) );
 	}
