@@ -115,7 +115,7 @@ class CLI extends WP_CLI_Command {
 	 * @param $assoc_args
 	 */
 	public function add_user_to_site( $args, $assoc_args ) {
-		$site = $this->get_site( $args[0] );
+		$site = $this->get_site( (int) $args[0] );
 		$user = $this->get_user( $args[1] );
 
 		$sites = get_user_meta( $user->ID, WP_Separate_User_Base::NETWORK_META_KEY, false );
@@ -152,7 +152,7 @@ class CLI extends WP_CLI_Command {
 	 * @param $assoc_args
 	 */
 	public function remove_user_from_site( $args, $assoc_args ) {
-		$site = $this->get_site( $args[0] );
+		$site = $this->get_site( (int) $args[0] );
 		$user = $this->get_user( $args[1] );
 
 		$sites = get_user_meta( $user->ID, WP_Separate_User_Base::SITE_META_KEY, false );
