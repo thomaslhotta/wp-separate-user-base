@@ -7,7 +7,7 @@
 	  "type": "package",
 	  "package": {
 	    "name": "wordpress/phpunit",
-	    "version": "4.9.8",
+	    "version": "4.9.9",
 	    "source": {
 	      "type": "git",
 		  "url": "git://develop.git.wordpress.org/ wordpress-develop",

@@ -5,6 +5,7 @@ namespace WP_SUB\Tests;
 use Exception,
     WP_SUB\CLI,
 	WP_UnitTestCase,
+	WP_User,
 	ArrayObject;
 
 require_once BASE_DIR . '/vendor/wp-cli/wp-cli/php/class-wp-cli-command.php';
@@ -33,7 +34,7 @@ class CLI_Test extends WP_UnitTestCase {
 		$this->error   = '';
 
 		$builder = $this->getMockBuilder( CLI::class );
-		$builder->setMethods( array( 'success', 'error', 'create_progress_bar', 'create_table' ) );
+		$builder->setMethods( array( 'success', 'error', 'confirm', 'create_progress_bar', 'create_table' ) );
 		$this->cli = $builder->getMock();
 
 		$this->cli->method( 'error' )
@@ -50,6 +51,14 @@ class CLI_Test extends WP_UnitTestCase {
 			          $this->returnCallback(
 				          function( $text ) {
 					          $this->success = $text;
+				          }
+			          )
+		          );
+
+		$this->cli->method( 'confirm' )
+		          ->will(
+			          $this->returnCallback(
+				          function() {
 				          }
 			          )
 		          );
@@ -345,6 +354,55 @@ class CLI_Test extends WP_UnitTestCase {
 		$network_rows = $this->get_table_rows( 1 );
 		$this->assertEquals( $n2->id, $network_rows[0][0] );
 		$this->assertEquals( 2, $network_rows[0][3] );
+	}
+
+	public function test_delete_orphaned_users() {
+		update_network_option( 1, 'wp_sub_add_users_to_network', 0 );
+
+		$s1 = get_current_blog_id();
+		$s2 = self::factory()->blog->create();
+		$s3 = self::factory()->blog->create();
+
+		// User blog 1
+		$u1 = self::factory()->user->create();
+
+		// Orphaned user
+		$u2 = self::factory()->user->create();
+		wp_sub_remove_user_from_site( $u2, $s1 );
+		wp_sub_add_user_to_site( $u2, $s2 );
+
+		// Orphaned user
+		$u3 = self::factory()->user->create();
+		wp_sub_remove_user_from_site( $u3, $s1 );
+		wp_sub_add_user_to_site( $u3, $s2 );
+
+		// Orphaned on site 2 but not on site 3
+		$u4 = self::factory()->user->create();
+		wp_sub_remove_user_from_site( $u4, $s1 );
+		wp_sub_add_user_to_site( $u4, $s2 );
+		wp_sub_add_user_to_site( $u4, $s3 );
+
+		// User blog 3
+		$u5 = self::factory()->user->create();
+		wp_sub_remove_user_from_site( $u5, $s1 );
+		wp_sub_remove_user_from_site( $u5, $s2 );
+		wp_sub_add_user_to_site( $u5, $s3 );
+
+		wpmu_delete_blog( $s2, true );
+
+		$this->cli->delete_orphaned_users(
+			[],
+			[
+				'yes' => true,
+				'site-id' => $s2
+			]
+		);
+
+		$this->assertInstanceOf( 'stdClass', WP_User::get_data_by( 'id', $u1 ) );
+		$this->assertFalse( WP_User::get_data_by( 'id', $u2 ) );
+		$this->assertFalse( WP_User::get_data_by( 'id', $u3 ) );
+		$this->assertInstanceOf( 'stdClass', WP_User::get_data_by( 'id', $u4 ) );
+		$this->assertInstanceOf( 'stdClass', WP_User::get_data_by( 'id', $u5 ) );
 	}
 
 	/**

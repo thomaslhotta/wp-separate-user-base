@@ -10,6 +10,7 @@ use WP_SUB\WP_Separate_User_Base,
 	WP_Site,
 	WP_Site_Query,
 	WP_User,
+	WP_User_Query,
 	Countable;
 
 /**
@@ -258,7 +259,7 @@ class CLI extends WP_CLI_Command {
 			$progress->tick();
 
 			/* @var WP_Site $site */
-			$users = new \WP_User_Query(
+			$users = new WP_User_Query(
 				array(
 					'blog_id' => $site->blog_id,
 					'number'  => false,
@@ -379,11 +380,89 @@ class CLI extends WP_CLI_Command {
 	}
 
 	/**
+	 * Allows deletion of orphaned users.
+	 *
+	 * [--yes]
+	 * Skip the deletion confirmation
+	 *
+	 * [--site-id=<int>]
+     * Directly provided a site id, skipping the selector.
+	 *
+	 * @subcommand delete-orphaned-users
+	 *
+	 * @param $args
+	 * @param $assoc_args
+	 */
+	public function delete_orphaned_users( $args, $assoc_args ) {
+		$assoc_args = wp_parse_args(
+			$assoc_args,
+			[
+				'site-id' => ''
+			]
+		);
+		
+		// Get all orphaned users
+		$orphaned_sites = wp_sub_get_orphaned_users();
+
+		// Bail of no users were found
+		if ( empty( $orphaned_sites ) ) {
+			$this->error( 'No orphaned users found' );
+		}
+
+
+		// Create a table of site IDs that have orphaned users
+		$table = $this->create_table(
+			[
+				'id' => 'Site ID',
+				'users' => 'User count'
+			],
+			[]
+		);
+
+		foreach ( $orphaned_sites as $site_id => $users ) {
+			$table->addRow(
+				[
+					'id' => $site_id,
+					'users' => count( $users )
+				]
+			);
+		}
+		$table->display();
+
+		// Allow user to select a site id
+		$selected = $assoc_args['site-id'];
+		while ( ! array_key_exists( $selected, $orphaned_sites ) ) {
+			$selected = \cli\prompt( 'Select a site ID' );
+		}
+
+		// Get confirmation
+		$this->confirm(
+			sprintf(
+				'Are you sure you want to delete %d users associated with site id \'%d\'',
+				count( $orphaned_sites[ $selected ] ),
+				$selected
+			),
+			$assoc_args
+		);
+
+		// Delete users
+		$progress = $this->create_progress_bar( 'Deleting users', count( $orphaned_sites[ $selected ] ) );
+		foreach ( $orphaned_sites[ $selected ] as $user_id ) {
+			$progress->tick();
+			wpmu_delete_user( $user_id );
+		}
+
+		$progress->finish();
+
+		$this->success( 'Deleted %d users', count( $orphaned_sites[ $selected ] ) );
+	}
+
+	/**
 	 * Created a CLI success message
 	 *
 	 * @codeCoverageIgnore
 	 */
-	public function success() {
+	protected function success() {
 		WP_CLI::success( call_user_func_array( 'sprintf', func_get_args() ) );
 	}
 
@@ -392,8 +471,18 @@ class CLI extends WP_CLI_Command {
 	 *
 	 * @codeCoverageIgnore
 	 */
-	public function error() {
+	protected function error() {
 		WP_CLI::error( call_user_func_array( 'sprintf', func_get_args() ) );
+	}
+
+	/**
+	 * Ask for confirmation before running a destructive operation.
+	 *
+	 * @param $question
+	 * @param array $assoc_args
+	 */
+	protected function confirm( $question, $assoc_args = array() ) {
+		WP_CLI::confirm( $question, $assoc_args	);
 	}
 
 	/**
@@ -404,7 +493,7 @@ class CLI extends WP_CLI_Command {
 	 * @return \cli\Table
 	 * @codeCoverageIgnore
 	 */
-	public function create_table( array $headers ) {
+	protected function create_table( array $headers ) {
 		$table = new \cli\Table();
 		$table->setHeaders( $headers );
 		return $table;
@@ -417,12 +506,12 @@ class CLI extends WP_CLI_Command {
 	 * @return \cli\progress\Bar
 	 * @codeCoverageIgnore
 	 */
-	public function create_progress_bar( string $message, $count ) {
+	protected function create_progress_bar( string $message, $count ) {
 		if ( ! is_numeric( $count ) && $count instanceof Countable ) {
 			$count = count( $count );
 		}
 
-		return \WP_CLI\Utils\make_progress_bar( $message, $count );
+		return WP_CLI\Utils\make_progress_bar( $message, $count );
 	}
 
 	/**

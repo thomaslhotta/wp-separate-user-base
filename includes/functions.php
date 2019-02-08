@@ -155,7 +155,9 @@ function wp_sub_remove_user_from_site( int $user_id, int $site_id ) : bool {
 /**
  * Returns query parameters for a query the fetches users the given user has access to.
  *
- * @param null $current_user
+ * @param int $current_user
+ *
+ * @return array
  */
 function wp_sub_get_accessible_users_query_args( int $current_user ) {
 	$blogs = wp_list_pluck(
@@ -185,4 +187,31 @@ function wp_sub_get_accessible_users_query_args( int $current_user ) {
 	}
 
 	return $args;
+}
+
+function wp_sub_get_orphaned_users() {
+	global $wpdb;
+
+	$all_user_site_keys = $wpdb->get_results(
+		$wpdb->prepare(
+			"SELECT u.ID AS user_id, GROUP_CONCAT( m.meta_value SEPARATOR ',' ) AS site_ids, MAX(b.blog_id) AS found_id 
+				 FROM $wpdb->usermeta AS m
+				 LEFT JOIN $wpdb->users AS u ON u.ID = m.user_id					
+				 LEFT JOIN $wpdb->blogs AS b ON b.blog_id = m.meta_value
+				 WHERE m.meta_key = %s AND u.ID IS NOT NULL
+				 GROUP BY u.ID HAVING found_id IS NULL
+				",
+			\WP_SUB\WP_Separate_User_Base::SITE_META_KEY
+		),
+		ARRAY_A
+	);
+
+	$orphaned = [];
+	foreach ( $all_user_site_keys as $user_site ) {
+		foreach ( wp_parse_id_list( $user_site['site_ids'] ) as $site_id ) {
+			$orphaned[ $site_id ][] = $user_site['user_id'];
+		}
+	}
+
+	return $orphaned;
 }
