@@ -7,20 +7,20 @@
 	  "type": "package",
 	  "package": {
 	    "name": "wordpress/phpunit",
-	    "version": "4.9.9",
+	    "version": "5.0.3",
 	    "source": {
 	      "type": "git",
 		  "url": "git://develop.git.wordpress.org/ wordpress-develop",
-		  "reference": "tags/4.9.9"
+		  "reference": "tags/5.0.3"
 	    }
 	  }
 	}
   ],
   "require": {},
   "require-dev": {
-    "wordpress/phpunit"  : "4.*",
+    "wordpress/phpunit"  : "5.*",
     "wp-cli/wp-cli": "v1.*",
-	"phpunit/phpunit": "6.*",
+    "phpunit/phpunit": "6.*",
     "phpunit/phpcov": "4.*"
   }
 }
