@@ -11,7 +11,7 @@
 	    "source": {
 	      "type": "git",
 		  "url": "git://develop.git.wordpress.org/ wordpress-develop",
-		  "reference": "master"
+		  "reference": "tags/4.9.9"
 	    }
 	  }
 	}
