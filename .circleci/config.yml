@@ -18,22 +18,11 @@ jobs:
 
         # zip: zlib1g-dev
         # gd: libjpeg62-turbo-dev libpng-dev libfreetype6-dev
-      - run: sudo apt-get update; sudo apt-get install openjdk-8-jre libicu-dev zlib1g-dev libfreetype6-dev libjpeg62-turbo-dev libpng-dev subversion default-mysql-client
+      - run: sudo apt-get update; sudo apt-get install libicu-dev zlib1g-dev libfreetype6-dev libjpeg62-turbo-dev libpng-dev default-mysql-client
 
       - run: sudo docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/
 
       - run: sudo docker-php-ext-install -j$(nproc) intl bcmath mysqli zip gd
-
-      #- run:
-      #    name: Installing Selenium stand alone server
-      #    command:
-      #      wget -O ~/selenium-server-standalone.jar https://selenium-release.storage.googleapis.com/3.9/selenium-server-standalone-3.9.1.jar
-
-      #- run:
-      #    name: Starting Selenium stand alone server
-      #    command:
-      #      java -Dwebdriver.chrome.driver=/usr/local/bin/chromedriver -jar ~/selenium-server-standalone.jar
-      #    background: true
 
       - run:
           name: Setting up php.ini
@@ -41,21 +30,11 @@ jobs:
             echo "display_errors = 1" | sudo tee -a /usr/local/etc/php/conf.d/wp-separate-user-base.ini
             echo "display_startup_errors = 1" | sudo tee -a  /usr/local/etc/php/conf.d/wp-separate-user-base.ini
             echo "error_reporting = -1" | sudo tee -a  /usr/local/etc/php/conf.d/wp-separate-user-base.ini
-      #      echo "sendmail_path = /home/circleci/mailhog sendmail" | sudo tee -a  /usr/local/etc/php/conf.d/wp-separate-user-base.ini
 
-      # Download and cache dependencies
-      - restore_cache:
-          keys:
-          - php-dependencies-{{ checksum "composer.json" }}
-          # fallback to using the latest cache if no exact match is found
-          - php-dependencies-
 
+      # Install composer dependencies	
       - run: composer install -n --prefer-dist
-
-      - save_cache:
-          paths:
-            - ./vendor
-          key: php-dependencies-{{ checksum "composer.json" }}
+ 
 
       # Unit Tests
       - run:
