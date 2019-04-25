@@ -206,17 +206,20 @@ class User_Test extends WP_UnitTestCase {
 	 */
 	public function test_WP_User_get_data_by_signature() {
 		global $wpdb;
-		wp_sub_add_user_to_network( 1,1 );
+		wp_sub_add_user_to_network( 1, 1 );
 
 		$queries = $this->hook_queries();
 
 		$data = \WP_User::get_data_by( 'id', 1 );
 		$this->assertEquals( 1, $data->ID );
 
-		$this->assertEquals(
+
+		$variants = array(
 			"SELECT * FROM $wpdb->users WHERE ID = '1'",
-			$queries[0]
+			"SELECT * FROM $wpdb->users WHERE ID = '1' LIMIT 1",
 		);
+
+		$this->assertContains( $queries[0], $variants );
 	}
 
 	/**
@@ -235,15 +238,15 @@ class User_Test extends WP_UnitTestCase {
 			)
 		);
 
-		wp_sub_add_user_to_network( $user_id,1 );
+		wp_sub_add_user_to_network( $user_id, 1 );
 
 		wp_cache_flush();
 
-		$this->assert_get_data_by_not_cached( 'id' , $user_id, $user_id );
-		$this->assert_get_data_by_cached( 'id' , $user_id, $user_id );
+		$this->assert_get_data_by_not_cached( 'id', $user_id, $user_id );
+		$this->assert_get_data_by_cached( 'id', $user_id, $user_id );
 
 		switch_to_blog( $blog_2 );
-		$this->assert_get_data_by_cached( 'id' , $user_id, $user_id );
+		$this->assert_get_data_by_cached( 'id', $user_id, $user_id );
 	}
 
 	/**

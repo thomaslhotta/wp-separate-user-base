@@ -68,9 +68,10 @@ class User {
 		global $wpdb;
 
 		// Prevent more expensive regex from running if not a user query
-		if ( 0 !== strpos( $sql, 'SELECT' ) || false === 'FROM ' . $wpdb->users ) {
+		if ( 0 !== strpos( $sql, 'SELECT' ) || false === strpos( $sql, 'FROM ' . $wpdb->users ) ) {
 			return $sql;
 		}
+
 
 		foreach ( $this->get_query_regex() as $pattern ) {
 			if ( preg_match( $pattern, $sql ) && wp_sub_enabled() ) {
@@ -93,7 +94,7 @@ class User {
 		if ( ! $this->query_regex ) {
 			$this->query_regex = array(
 				sprintf(
-					'/^SELECT \* FROM %s WHERE (user_email) = \'.*\'$/',
+					'/^SELECT \* FROM %s WHERE (user_email) = \'.*\'(?:\sLIMIT\s1)?$/',
 					preg_quote( $wpdb->users, '/' )
 				),
 			);
@@ -111,6 +112,8 @@ class User {
 	 */
 	protected function add_meta_sql( string $sql ) {
 		global $wpdb;
+
+		$sql = preg_replace( '/LIMIT 1$/', '', $sql );
 
 		$meta = new \WP_Meta_Query(
 			array(

@@ -7,7 +7,6 @@ if ( ! defined( 'BASE_DIR' ) ) {
 define( 'WP_TESTS_DIR', BASE_DIR . '/vendor/wordpress/phpunit/tests/phpunit/' );
 define( 'ABSPATH', BASE_DIR . '/vendor/wordpress/phpunit/src/' );
 
-
 $table_prefix = 'wptests_';
 
 // Create the WP Test suite config
