@@ -37,6 +37,7 @@
             <group>option</group>     <!-- Causes error with phpunit -->
             <group>formatting</group> <!-- Causes error with phpunit -->
             <group>themes</group>     <!-- Causes error with phpunit -->
+            <group>testsuite</group>  <!-- We are not testing the test suite itself -->
         </exclude>
     </groups>
 
