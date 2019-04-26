@@ -30,19 +30,9 @@ jobs:
             echo "display_startup_errors = 1" | sudo tee -a  /usr/local/etc/php/conf.d/wp-separate-user-base.ini
             echo "error_reporting = -1" | sudo tee -a  /usr/local/etc/php/conf.d/wp-separate-user-base.ini
 
-      # Download and cache dependencies
-      - restore_cache:
-          keys:
-          - php-dependencies-{{ checksum "composer.json" }}
-          # fallback to using the latest cache if no exact match is found
-          - php-dependencies-
-
+    
       - run: composer install -n --prefer-dist
-
-      - save_cache:
-          paths:
-            - ./vendor
-          key: php-dependencies-{{ checksum "composer.json" }}
+    
 
       # Unit Tests
       - run:

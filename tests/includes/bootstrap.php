@@ -22,14 +22,11 @@ $config_file = "<?php
 		@define( 'DB_COLLATE', '' );
 		\$table_prefix  = 'wptests_';
 		@define( 'WP_TESTS_DOMAIN', '" . WP_TESTS_DOMAIN . "' );
-		@define( 'WP_TESTS_EMAIL', 'admin@test.dev' );
-		@define( 'WP_TESTS_TITLE', 'Test page' );
+		@define( 'WP_TESTS_EMAIL', 'admin@example.org' );
+		@define( 'WP_TESTS_TITLE', 'Test Blog' );
 		@define( 'WP_PHP_BINARY', 'php' );
+		@define( 'WP_DEFAULT_THEME', 'default' );
 ";
-
-if ( defined( 'WP_DEFAULT_THEME' ) ) {
-	$config_file .= "\n  @define( 'WP_DEFAULT_THEME', '" . WP_DEFAULT_THEME . "' );";
-}
 
 file_put_contents( WP_TESTS_DIR . 'wp-tests-config.php', $config_file );
 
@@ -41,27 +38,13 @@ require_once WP_TESTS_DIR . 'includes/functions.php';
  * Loads all plugins needed for running the tests
  */
 function _manually_load_plugin() {
-	// Gforms
+	// Load plugin
 	require_once __DIR__ . '/../../wp-separate-user-base.php';
 }
-
 tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );
 
 // Setup WordPress environment
 require WP_TESTS_DIR . 'includes/bootstrap.php';
 
-
 add_user_meta( 1, \WP_SUB\WP_Separate_User_Base::NETWORK_META_KEY, 1 );
 update_network_option( 1, 'wp_sub_add_users_to_network', 1 );
-
-
-// Limit the compute time required for passwords. This speeds up unit test that create users.
-// DO NOT USE THIS IN PRODUCTION!
-tests_add_filter(
-	'wp_hash_password_options',
-	function () {
-		return array(
-			'cost' => 4,
-		);
-	}
-);

@@ -10,34 +10,50 @@
          beStrictAboutTestsThatDoNotTestAnything="false">
 
     <testsuites>
+        <!-- Run WP SUP tests -->
         <testsuite name="wp_sub">
             <directory suffix="test.php">./tests/tests/</directory>
         </testsuite>
-        <testsuite name="wordpress">
-            <directory suffix=".php">./vendor/wordpress/phpunit/tests/phpunit/tests/meta</directory>
-            <directory suffix=".php">./vendor/wordpress/phpunit/tests/phpunit/tests/rest-api</directory>
-            <directory suffix=".php">./vendor/wordpress/phpunit/tests/phpunit/tests</directory>
-        </testsuite>
+        
+        <!-- Default test suite to run all tests -->
+		<testsuite name="default">
+			<directory suffix=".php">./vendor/wordpress/phpunit/tests/phpunit/tests</directory>
+			<file phpVersion="5.3.0">./vendor/wordpress/phpunit/tests/phpunit/tests/actions/closures.php</file>
+			<file phpVersion="5.3.0">./vendor/wordpress/phpunit/tests/phpunit/tests/image/editor.php</file>
+			<file phpVersion="5.3.0">./vendor/wordpress/phpunit/tests/phpunit/tests/image/editorGd.php</file>
+			<file phpVersion="5.3.0">./vendor/wordpress/phpunit/tests/phpunit/tests/image/editorImagick.php</file>
+			<exclude>./vendor/wordpress/phpunit/tests/phpunit/tests/actions/closures.php</exclude>
+			<exclude>./vendor/wordpress/phpunit/tests/phpunit/tests/image/editor.php</exclude>
+			<exclude>./vendor/wordpress/phpunit/tests/phpunit/tests/image/editorGd.php</exclude>
+			<exclude>./vendor/wordpress/phpunit/tests/phpunit/tests/image/editorImagick.php</exclude>
+			<exclude>./vendor/wordpress/phpunit/tests/phpunit/tests/rest-api/rest-autosaves-controller.php</exclude>
+		</testsuite>
+
+		<!-- Sets the DOING_AUTOSAVE constant, so needs to be run last -->
+		<testsuite name="restapi-autosave">
+			<file>./vendor/wordpress/phpunit/tests/phpunit/tests/rest-api/rest-autosaves-controller.php</file>
+		</testsuite>
     </testsuites>
 
     <groups>
-        <exclude>
-            <group>ajax</group>
-            <group>ms-excluded</group>
-            <group>ms-files</group>
-            <group>external-http</group>
-            <group>plugins</group>
-            <group>http</group>
-            <group>import</group>
-            <group>widgets</group>    <!-- Causes error with phpunit -->
-            <group>widgets</group>    <!-- Causes error with phpunit -->
-            <group>customize</group>  <!-- Causes error with phpunit -->
-            <group>scripts</group>    <!-- Causes error with phpunit -->
-            <group>navmenus</group>   <!-- Causes error with phpunit -->
-            <group>option</group>     <!-- Causes error with phpunit -->
-            <group>formatting</group> <!-- Causes error with phpunit -->
-            <group>themes</group>     <!-- Causes error with phpunit -->
-            <group>testsuite</group>  <!-- We are not testing the test suite itself -->
+          <exclude>
+            <!-- Taken from multisite.xml -->
+           	<group>ajax</group>
+			<group>ms-files</group>
+			<group>ms-excluded</group>
+			<group>external-http</group>
+			<group>oembed-headers</group>
+
+            <!-- Disabling test groups because they cause errors -->
+            <group>document-title</group>   <!-- We are not testing the test suite itself -->
+            <group>emoji</group>            <!-- Would require us to build JS. -->
+			<group>feed</group>             <!-- Cases errors for, we don't modify feeds anyway -->
+            <group>import</group>           <!-- Requires importer plugin -->
+            <group>oembed</group>           <!-- Would require us to build JS. We do not changes anything with oembed anyway -->
+            <group>scripts</group>          <!-- Would require us to build JS. -->
+            <group>restapi-jsclient</group> <!-- Would require us to build JS. -->
+            <group>shortcode</group>        <!-- Would require us to build JS. -->
+            <group>testsuite</group>        <!-- We are not testing the test suite itself -->
         </exclude>
     </groups>
 
@@ -63,4 +79,5 @@
         <const name="WP_RUN_CORE_TESTS" value="1" />
         <!--<const name="BASE_DIR" value="/var/www" />--><!-- Uncomment to change WP test suite dir -->
     </php>
+
 </phpunit>
