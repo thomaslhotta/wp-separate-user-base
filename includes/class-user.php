@@ -29,6 +29,7 @@ class User {
 
 		// User creation
 		add_action( 'user_register', array( $this, 'add_user_access_meta' ) );
+		add_action( 'wpmu_activate_user', [ $this, 'wpmu_activate_user' ] );
 
 		// Caching behavior changes
 		$this->modify_cache_groups();
@@ -211,5 +212,15 @@ class User {
 		} else {
 			update_user_meta( $user_id, WP_Separate_User_Base::SITE_META_KEY, get_current_blog_id() );
 		}
+	}
+
+	/**
+	 * Clean up signups after activation. This prevents data redundancy and issues with u
+	 */
+	public function wpmu_activate_user() {
+		global $wpdb;
+
+		// Clean up all activated signups
+		$wpdb->delete( $wpdb->signups, [ 'active' => 1 ] );
 	}
 }
