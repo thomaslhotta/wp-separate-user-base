@@ -29,6 +29,7 @@ class User {
 
 		// User creation
 		add_action( 'user_register', array( $this, 'add_user_access_meta' ) );
+		add_action( 'wpmu_activate_user', [ $this, 'wpmu_activate_user' ] );
 
 		// Caching behavior changes
 		$this->modify_cache_groups();
@@ -68,9 +69,10 @@ class User {
 		global $wpdb;
 
 		// Prevent more expensive regex from running if not a user query
-		if ( 0 !== strpos( $sql, 'SELECT' ) || false === 'FROM ' . $wpdb->users ) {
+		if ( 0 !== strpos( $sql, 'SELECT' ) || false === strpos( $sql, 'FROM ' . $wpdb->users ) ) {
 			return $sql;
 		}
+
 
 		foreach ( $this->get_query_regex() as $pattern ) {
 			if ( preg_match( $pattern, $sql ) && wp_sub_enabled() ) {
@@ -93,7 +95,7 @@ class User {
 		if ( ! $this->query_regex ) {
 			$this->query_regex = array(
 				sprintf(
-					'/^SELECT \* FROM %s WHERE (user_email) = \'.*\'$/',
+					'/^SELECT \* FROM %s WHERE (user_email) = \'.*\'(?:\sLIMIT\s1)?$/',
 					preg_quote( $wpdb->users, '/' )
 				),
 			);
@@ -111,6 +113,8 @@ class User {
 	 */
 	protected function add_meta_sql( string $sql ) {
 		global $wpdb;
+
+		$sql = preg_replace( '/LIMIT 1$/', '', $sql );
 
 		$meta = new \WP_Meta_Query(
 			array(
@@ -208,5 +212,15 @@ class User {
 		} else {
 			update_user_meta( $user_id, WP_Separate_User_Base::SITE_META_KEY, get_current_blog_id() );
 		}
+	}
+
+	/**
+	 * Clean up signups after activation. This prevents data redundancy and issues with u
+	 */
+	public function wpmu_activate_user() {
+		global $wpdb;
+
+		// Clean up all activated signups
+		$wpdb->delete( $wpdb->signups, [ 'active' => 1 ] );
 	}
 }

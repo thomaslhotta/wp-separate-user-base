@@ -1,7 +1,8 @@
 <?php
 namespace WP_SUB\Tests;
 
-use WP_User_Query,
+use WP_User,
+	WP_User_Query,
 	WP_UnitTestCase,
 	WPDieException,
 	WP_SUB\WP_Separate_User_Base,
@@ -206,17 +207,20 @@ class User_Test extends WP_UnitTestCase {
 	 */
 	public function test_WP_User_get_data_by_signature() {
 		global $wpdb;
-		wp_sub_add_user_to_network( 1,1 );
+		wp_sub_add_user_to_network( 1, 1 );
 
 		$queries = $this->hook_queries();
 
-		$data = \WP_User::get_data_by( 'id', 1 );
+		$data = WP_User::get_data_by( 'id', 1 );
 		$this->assertEquals( 1, $data->ID );
 
-		$this->assertEquals(
+
+		$variants = array(
 			"SELECT * FROM $wpdb->users WHERE ID = '1'",
-			$queries[0]
+			"SELECT * FROM $wpdb->users WHERE ID = '1' LIMIT 1",
 		);
+
+		$this->assertContains( $queries[0], $variants );
 	}
 
 	/**
@@ -235,15 +239,15 @@ class User_Test extends WP_UnitTestCase {
 			)
 		);
 
-		wp_sub_add_user_to_network( $user_id,1 );
+		wp_sub_add_user_to_network( $user_id, 1 );
 
 		wp_cache_flush();
 
-		$this->assert_get_data_by_not_cached( 'id' , $user_id, $user_id );
-		$this->assert_get_data_by_cached( 'id' , $user_id, $user_id );
+		$this->assert_get_data_by_not_cached( 'id', $user_id, $user_id );
+		$this->assert_get_data_by_cached( 'id', $user_id, $user_id );
 
 		switch_to_blog( $blog_2 );
-		$this->assert_get_data_by_cached( 'id' , $user_id, $user_id );
+		$this->assert_get_data_by_cached( 'id', $user_id, $user_id );
 	}
 
 	/**
@@ -262,7 +266,7 @@ class User_Test extends WP_UnitTestCase {
 			)
 		);
 
-		wp_sub_add_user_to_network( $user_id,1 );
+		wp_sub_add_user_to_network( $user_id, 1 );
 
 		wp_cache_flush();
 
@@ -289,7 +293,7 @@ class User_Test extends WP_UnitTestCase {
 			)
 		);
 
-		wp_sub_add_user_to_network( $user_id,1 );
+		wp_sub_add_user_to_network( $user_id, 1 );
 
 		wp_cache_flush();
 
@@ -298,6 +302,37 @@ class User_Test extends WP_UnitTestCase {
 
 		switch_to_blog( $blog_2 );
 		$this->assert_get_data_by_cached( 'slug', 'u1', $user_id );
+	}
+
+	public function test_signups_deleted() {
+		global $wpdb;
+
+		wpmu_signup_user(
+			'test1',
+			'test1@gmail.com',
+			array()
+		);
+
+		wpmu_signup_user(
+			'test2',
+			'test2@gmail.com',
+			array()
+		);
+
+		wpmu_signup_user(
+			'test3',
+			'test3@gmail.com',
+			array()
+		);
+
+		$signups = $wpdb->get_results( 'SELECT * FROM ' . $wpdb->signups, ARRAY_A );
+		$this->assertCount( 3, $signups );
+		wpmu_activate_signup( $signups[0]['activation_key'] );
+
+		$signups = $wpdb->get_results( 'SELECT * FROM ' . $wpdb->signups, ARRAY_A );
+		$this->assertCount( 2, $signups );
+		$this->assertEmpty( $signups[0]['active'] );
+		$this->assertEmpty( $signups[1]['active'] );
 	}
 
 	protected function assert_get_data_by_cached( $by, $id, $check_user_id ) {
@@ -324,7 +359,7 @@ class User_Test extends WP_UnitTestCase {
 		$misses = $wp_object_cache->cache_misses;
 		$hits   = $wp_object_cache->cache_hits;
 
-		$data = \WP_User::get_data_by( $by, $id );
+		$data = WP_User::get_data_by( $by, $id );
 		$this->assertEquals( $misses + 1, $wp_object_cache->cache_misses, 'Expected cache miss' );
 		$this->assertEquals( $hits, $wp_object_cache->cache_hits, 'Expected cache hit' );
 
