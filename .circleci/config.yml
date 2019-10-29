@@ -7,8 +7,14 @@ jobs:
   build:
     docker:
       # specify the version you desire here
-      - image: circleci/php:7.1-node-browsers
-      - image: circleci/mysql:5.6-ram     
+      - image: circleci/php:7.1-cli-stretch
+      - image: circleci/mysql:8.0.4
+        environment:
+          MYSQL_ROOT_PASSWORD: rootpw
+          MYSQL_DATABASE: tests
+          MYSQL_USER: default
+          MYSQL_PASSWORD: secret
+        command: [--default-authentication-plugin=mysql_native_password]
 
     working_directory: ~/wp-separate-user-base
 
@@ -17,12 +23,25 @@ jobs:
 
         # zip: zlib1g-dev
         # gd: libjpeg62-turbo-dev libpng-dev libfreetype6-dev
-      - run: sudo apt-get update; sudo apt-get install libicu-dev zlib1g-dev libfreetype6-dev libjpeg62-turbo-dev libpng-dev subversion default-mysql-client
+      - run:
+          name: Install packages
+          command: |
+            sudo apt-get update
+            sudo apt-get install libfreetype6-dev \
+                                 libjpeg62-turbo-dev \
+                                 libpng-dev \
+                                 mysql-client
 
       - run: sudo docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/
 
       - run: sudo docker-php-ext-install -j$(nproc) intl bcmath mysqli zip gd
-     
+
+      - run:
+          name: Install pcov code coverage
+          command: |
+            sudo pecl install pcov
+            sudo docker-php-ext-enable pcov
+
       - run:
           name: Setting up php.ini
           command: |
@@ -30,9 +49,22 @@ jobs:
             echo "display_startup_errors = 1" | sudo tee -a  /usr/local/etc/php/conf.d/wp-separate-user-base.ini
             echo "error_reporting = -1" | sudo tee -a  /usr/local/etc/php/conf.d/wp-separate-user-base.ini
 
-    
-      - run: composer install -n --prefer-dist
-    
+      - restore_cache:
+          keys:
+            - php-dependencies-{{ checksum "composer.lock" }}
+
+      - run:
+          name: Install PHP dependencies
+          command: |
+            composer global require hirak/prestissimo
+            composer install --no-interaction --prefer-dist
+
+      - save_cache:
+          paths:
+            - vendor
+            - ~/.composer/cache
+          key: php-dependencies-{{ checksum "composer.lock" }}
+
 
       # Unit Tests
       - run:
@@ -40,6 +72,7 @@ jobs:
           command: |
             echo 'export PATH=~/wp-separate-user-base/vendor/bin:$PATH' >> $BASH_ENV
             source ~/.bashrc
+
       - run:
           name: Creating common artefact dirs
           command: |
@@ -47,12 +80,17 @@ jobs:
             mkdir -p ~/test-results
             mkdir -p ~/code-coverage
 
+      - run:
+          name: Set up pcov
+          command: |
+            vendor/bin/pcov clobber
+          working_directory: ~/wp-separate-user-base
+
       # Core unit tests
       - run:
           name: Run core unit tests
           command: |
-            phpdbg -qrr ~/wp-separate-user-base/vendor/bin/phpunit --coverage-html ~/code-coverage --log-junit ~/results/core.xml
-
+            php ~/wp-separate-user-base/vendor/bin/phpunit --coverage-html ~/code-coverage --log-junit ~/results/core.xml
 
       # Store common artifacts
       - store_test_results:
@@ -63,4 +101,3 @@ jobs:
 
       - store_artifacts:
           path: ~/code-coverage
-     
