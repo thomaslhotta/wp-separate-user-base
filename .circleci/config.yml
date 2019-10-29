@@ -45,9 +45,13 @@ jobs:
       - run:
           name: Setting up php.ini
           command: |
-            echo "display_errors = 1" | sudo tee -a /usr/local/etc/php/conf.d/wp-separate-user-base.ini
-            echo "display_startup_errors = 1" | sudo tee -a  /usr/local/etc/php/conf.d/wp-separate-user-base.ini
-            echo "error_reporting = -1" | sudo tee -a  /usr/local/etc/php/conf.d/wp-separate-user-base.ini
+            sudo echo '
+            display_errors = 1
+            display_startup_errors = 1
+            memory_limit = 512M
+            error_reporting = -1
+            pcov.initial.files = 1000
+            ' | sudo tee -a  /usr/local/etc/php/conf.d/test.ini
 
       - restore_cache:
           keys:
@@ -64,6 +68,12 @@ jobs:
             - vendor
             - ~/.composer/cache
           key: php-dependencies-{{ checksum "composer.lock" }}
+
+      - run:
+          name: Patch issues with WordPress test suite
+          command: |
+             grep -lr "@covers [_a-z]\{1,\}" . | xargs sed -i -e 's/@covers \([_a-z]\)/@covers \\\1/g'
+          working_directory: ~/wp-separate-user-base/vendor/wordpress/phpunit/tests/phpunit/tests
 
 
       # Unit Tests
@@ -86,11 +96,12 @@ jobs:
             vendor/bin/pcov clobber
           working_directory: ~/wp-separate-user-base
 
-      # Core unit tests
       - run:
           name: Run core unit tests
           command: |
             php ~/wp-separate-user-base/vendor/bin/phpunit --coverage-html ~/code-coverage --log-junit ~/results/core.xml
+      #php ~/wp-separate-user-base/vendor/bin/phpunit --coverage-html ~/code-coverage --log-junit ~/results/core.xml --debug
+      #--coverage-php ~/code-coverage-tmp/coverage.cov
 
       # Store common artifacts
       - store_test_results:

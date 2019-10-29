@@ -5,7 +5,7 @@
          colors="true"
          convertErrorsToExceptions="true"
          convertNoticesToExceptions="true"
-         convertWarningsToExceptions="true"
+         convertWarningsToExceptions="false"
          stopOnError="false"
          beStrictAboutTestsThatDoNotTestAnything="false">
 
@@ -68,8 +68,8 @@
         </whitelist>
 
         <blacklist>
-        	<directory>./vendor/</directory>
-            <directory>./tests/</directory>
+        	<directory>./xvendor/</directory>
+            <directory>./xtests/</directory>
         </blacklist>
     </filter>
 
