@@ -121,6 +121,17 @@ function wp_sub_user_exists_on_site( int $user_id, int $site_id ) : bool {
 }
 
 /**
+ * Returns the site IDs the given user has explicitly been added to.
+ *
+ * @param int $user_id
+ *
+ * @return array
+ */
+function wp_sub_get_user_sites( int $user_id ) {
+	return get_user_meta( $user_id, \WP_SUB\WP_Separate_User_Base::SITE_META_KEY, false );
+}
+
+/**
  * Adds the given user to the given site
  *
  * @param int $user_id
@@ -194,9 +205,9 @@ function wp_sub_get_orphaned_users() {
 
 	$all_user_site_keys = $wpdb->get_results(
 		$wpdb->prepare(
-			"SELECT u.ID AS user_id, GROUP_CONCAT( m.meta_value SEPARATOR ',' ) AS site_ids, MAX(b.blog_id) AS found_id 
+			"SELECT u.ID AS user_id, GROUP_CONCAT( m.meta_value SEPARATOR ',' ) AS site_ids, MAX(b.blog_id) AS found_id
 				 FROM $wpdb->usermeta AS m
-				 LEFT JOIN $wpdb->users AS u ON u.ID = m.user_id					
+				 LEFT JOIN $wpdb->users AS u ON u.ID = m.user_id
 				 LEFT JOIN $wpdb->blogs AS b ON b.blog_id = m.meta_value
 				 WHERE m.meta_key = %s AND u.ID IS NOT NULL
 				 GROUP BY u.ID HAVING found_id IS NULL
