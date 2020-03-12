@@ -125,7 +125,7 @@ function wp_sub_user_exists_on_site( int $user_id, int $site_id ) : bool {
  *
  * @param int $user_id
  *
- * @return mixed
+ * @return array
  */
 function wp_sub_get_user_sites( int $user_id ) {
 	return get_user_meta( $user_id, \WP_SUB\WP_Separate_User_Base::SITE_META_KEY, false );
