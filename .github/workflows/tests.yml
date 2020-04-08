@@ -96,10 +96,4 @@ jobs:
         with:
           name: coverage
           path: ${{ env.COVERAGE_DIR }}
-
-      - name: Upload code coverage
-        uses: actions/upload-artifact@v1
-        if: ${{ success() || failure() }}
-        with:
-          name: screenshots
-          path: ${{ env.SELENIUM_SCREENSHOT_DIR }}
+   
