@@ -17,20 +17,12 @@ jobs:
     env:
       extensions: pcov, curl, intl, mysqli, json, dom, bcmath, zip
       key: cache-v4
-      SELENIUM_SCREENSHOT_DIR: ${{ github.workspace }}/screenshots
-      SELENIUM_DOWNLOAD_DIR: ${{ github.workspace }}/screenshots
-      SELENIUM_PHP_ERROR_LOG_FILE: ${{ github.workspace }}/screenshots/errors.log
       COVERAGE_DIR: ${{ github.workspace }}/coverage
       COVERAGE_TMP_DIR: ${{ github.workspace }}/coverage-tmp
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Update host file
-        run: |
-          echo 127.0.0.1 mysql | sudo tee -a /etc/hosts
-          echo 127.0.0.1 workspace | sudo tee -a /etc/hosts
+        uses: actions/checkout@v2     
 
       - name: Create directories
         run: |
@@ -38,16 +30,7 @@ jobs:
           mkdir -p $COVERAGE_TMP_DIR
 
       - name: Start MySQL
-        run: |
-
-          if [[ ! -f /etc/init.d/mysql ]]
-          then
-            sudo su
-            export RUNLEVEL=1
-            apt update
-            apt install mysql-server
-          fi
-
+        run: |        
           sudo /etc/init.d/mysql start
 
       - name: Added MySQL users
