@@ -68,8 +68,8 @@
         </whitelist>
 
         <blacklist>
-        	<directory>./xvendor/</directory>
-            <directory>./xtests/</directory>
+        	<directory>./vendor/</directory>
+            <directory>./tests/</directory>
         </blacklist>
     </filter>
 
