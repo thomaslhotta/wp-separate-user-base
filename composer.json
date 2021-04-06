@@ -7,10 +7,10 @@
       "type": "package",
       "package": {
         "name": "wordpress/phpunit",
-        "version": "5.2.4",
+        "version": "5.2.9",
          "dist": {
           "type": "zip",
-          "url": "https://github.com/WordPress/wordpress-develop/archive/5.2.4.zip"
+          "url": "https://github.com/WordPress/wordpress-develop/archive/5.2.9.zip"
         }
       }
     }
