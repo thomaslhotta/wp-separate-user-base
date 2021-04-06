@@ -2,8 +2,10 @@
 
 namespace WP_SUB;
 
-use WP_User_Query,
-	ReflectionClass;
+use WP_Meta_Query;
+use WP_User_Query;
+use ReflectionClass;
+use ReflectionException;
 
 /**
  * Handles user modifications
@@ -20,7 +22,7 @@ class User {
 
 	/**
 	 * @codeCoverageIgnore
-	 * @throws \ReflectionException
+	 * @throws ReflectionException
 	 */
 	public function register_hooks() {
 		// User query integration
@@ -39,7 +41,7 @@ class User {
 	/**
 	 * Modifies persistent cache groups
 	 *
-	 * @throws \ReflectionException
+	 * @throws ReflectionException
 	 */
 	public function modify_cache_groups() {
 		$cache = $GLOBALS['wp_object_cache'];
@@ -116,7 +118,7 @@ class User {
 
 		$sql = preg_replace( '/LIMIT 1$/', '', $sql );
 
-		$meta = new \WP_Meta_Query(
+		$meta = new WP_Meta_Query(
 			array(
 				'relation' => 'OR',
 				array(

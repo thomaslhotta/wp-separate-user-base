@@ -3,15 +3,15 @@ declare(strict_types = 1);
 
 namespace WP_SUB;
 
-use WP_SUB\WP_Separate_User_Base,
-	WP_CLI,
-	WP_CLI_Command,
-	WP_Network,
-	WP_Site,
-	WP_Site_Query,
-	WP_User,
-	WP_User_Query,
-	Countable;
+use WP_SUB\WP_Separate_User_Base;
+use WP_CLI;
+use WP_CLI_Command;
+use WP_Network;
+use WP_Site;
+use WP_Site_Query;
+use WP_User;
+use WP_User_Query;
+use Countable;
 
 /**
  * Handles user separation between networks and sites
@@ -42,7 +42,7 @@ class CLI extends WP_CLI_Command {
 	 */
 	public function add_user_to_network( $args, $assoc_args ) {
 		$network = $this->get_network( (int) $args[0] );
-		$user = $this->get_user( $args[1] );
+		$user    = $this->get_user( $args[1] );
 
 		$user_id = (int) $user->ID;
 
@@ -81,7 +81,7 @@ class CLI extends WP_CLI_Command {
 	 */
 	public function remove_user_from_network( $args, $assoc_args ) {
 		$network = $this->get_network( $args[0] );
-		$user = $this->get_user( $args[1] );
+		$user    = $this->get_user( $args[1] );
 
 		$networks = get_user_meta( $user->ID, WP_Separate_User_Base::NETWORK_META_KEY, false );
 		if ( ! in_array( $network->id, $networks ) ) {
@@ -185,7 +185,7 @@ class CLI extends WP_CLI_Command {
 	 * @param $args
 	 */
 	public function list_user_networks( $args ) {
-		$user = $this->get_user( $args[0] );
+		$user     = $this->get_user( $args[0] );
 		$networks = get_user_meta( $user->ID, WP_Separate_User_Base::NETWORK_META_KEY, false );
 
 		$table = $this->create_table( array( 'ID', 'Name', 'URL' ) );
@@ -218,7 +218,7 @@ class CLI extends WP_CLI_Command {
 	 * @param $args
 	 */
 	public function list_user_sites( $args ) {
-		$user = $this->get_user( $args[0] );
+		$user  = $this->get_user( $args[0] );
 		$sites = get_user_meta( $user->ID, WP_Separate_User_Base::SITE_META_KEY, false );
 
 		$table = $this->create_table( array( 'ID', 'Name', 'URL', 'User role' ) );
@@ -242,11 +242,11 @@ class CLI extends WP_CLI_Command {
 	 */
 	public function add_users_to_sites_from_roles() {
 		$added_to_network = array();
-		$added_to_site = array();
+		$added_to_site    = array();
 
 		$sites_query = new WP_Site_Query(
 			array(
-				'number' => false,
+				'number'            => false,
 				'update_site_cache' => false,
 			)
 		);
@@ -261,14 +261,14 @@ class CLI extends WP_CLI_Command {
 			/* @var WP_Site $site */
 			$users = new WP_User_Query(
 				array(
-					'blog_id' => $site->blog_id,
-					'number'  => false,
-					'fields'  => 'ids',
+					'blog_id'                          => $site->blog_id,
+					'number'                           => false,
+					'fields'                           => 'ids',
 					'wp_sub_disable_query_integration' => true,
 				)
 			);
 
-			$found_users = 0;
+			$found_users          = 0;
 			$add_users_to_network = get_network_option( $site->network_id, 'wp_sub_add_users_to_network' );
 
 			foreach ( $users->get_results() as $user_id ) {
@@ -386,7 +386,7 @@ class CLI extends WP_CLI_Command {
 	 * Skip the deletion confirmation
 	 *
 	 * [--site-id=<int>]
-     * Directly provided a site id, skipping the selector.
+	 * Directly provided a site id, skipping the selector.
 	 *
 	 * @subcommand delete-orphaned-users
 	 *
@@ -397,10 +397,10 @@ class CLI extends WP_CLI_Command {
 		$assoc_args = wp_parse_args(
 			$assoc_args,
 			[
-				'site-id' => ''
+				'site-id' => '',
 			]
 		);
-		
+
 		// Get all orphaned users
 		$orphaned_sites = wp_sub_get_orphaned_users();
 
@@ -412,19 +412,18 @@ class CLI extends WP_CLI_Command {
 
 		// Create a table of site IDs that have orphaned users
 		$table = $this->create_table(
-			[
-				'id' => 'Site ID',
-				'users' => 'User count'
-			],
-			[]
+			array(
+				'id'    => 'Site ID',
+				'users' => 'User count',
+			)
 		);
 
 		foreach ( $orphaned_sites as $site_id => $users ) {
 			$table->addRow(
-				[
-					'id' => $site_id,
-					'users' => count( $users )
-				]
+				array(
+					'id'    => $site_id,
+					'users' => count( $users ),
+				)
 			);
 		}
 		$table->display();
@@ -482,7 +481,7 @@ class CLI extends WP_CLI_Command {
 	 * @param array $assoc_args
 	 */
 	protected function confirm( $question, $assoc_args = array() ) {
-		WP_CLI::confirm( $question, $assoc_args	);
+		WP_CLI::confirm( $question, $assoc_args );
 	}
 
 	/**
@@ -563,7 +562,7 @@ class CLI extends WP_CLI_Command {
 	 * @return string
 	 */
 	protected function format_site_name( WP_Site $site ) {
-		return sprintf( '"%s" (%d)' , $site->blogname, $site->id );
+		return sprintf( '"%s" (%d)', $site->blogname, $site->id );
 	}
 
 	/**
@@ -577,7 +576,7 @@ class CLI extends WP_CLI_Command {
 
 		if ( is_numeric( $id ) ) {
 			$user = get_user_by( 'id', $id );
-		} else if ( filter_var( $id, FILTER_VALIDATE_EMAIL ) ) {
+		} elseif ( filter_var( $id, FILTER_VALIDATE_EMAIL ) ) {
 			$user = get_user_by( 'email', $id );
 		} else {
 			$user = get_user_by( 'login', $id );

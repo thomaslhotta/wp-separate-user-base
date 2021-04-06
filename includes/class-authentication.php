@@ -3,6 +3,7 @@
 namespace WP_SUB;
 
 use WP_User;
+use ReflectionException;
 
 /**
  * Handles user authentication
@@ -13,12 +14,11 @@ use WP_User;
 class Authentication {
 	/**
 	 * @codeCoverageIgnore
-	 * @throws \ReflectionException
+	 * @throws ReflectionException
 	 */
 	public function register_hooks() {
 		add_action( 'auth_cookie_bad_username', array( $this, 'auth_cookie_bad_username' ) );
 	}
-
 
 	public function auth_cookie_bad_username( $cookie_elements ) {
 		if ( ! isset( $GLOBALS['pagenow'] ) || 'wp-login.php' !== $GLOBALS['pagenow'] ) {

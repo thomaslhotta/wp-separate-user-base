@@ -1,8 +1,9 @@
 <?php
 namespace WP_SUB;
 
-use WP_SUB\WP_Separate_User_Base,
-	WP_Network;
+use WP_SUB\WP_Separate_User_Base;
+use WP_Network;
+use WP_User_Query;
 
 /**
  * Adds WP-Admin functionality
@@ -13,8 +14,12 @@ use WP_SUB\WP_Separate_User_Base,
 class Admin {
 
 	public function register_hooks() {
+		// Network admin user table integration
 		add_filter( 'manage_users-network_columns', array( $this, 'add_network_column' ) );
 		add_action( 'manage_users_custom_column', array( $this, 'render_network_column' ), 10, 3 );
+
+		// Site admin user table integration
+		add_action( 'load-users.php', [ $this, 'on_user_page_init' ] );
 	}
 
 	public function add_network_column( array $columns ) {
@@ -93,6 +98,63 @@ class Admin {
 		}
 
 		return sprintf( '<ul>%s</ul>', $network_links );
+	}
+
+	/**
+	 * Makes user table show all users of the current site. Only takes effect if users are not automatically added to
+	 * the current network.
+	 */
+	public function on_user_page_init() {
+		// This is only needed if users are not added to the network automatically.
+		if ( get_network_option( get_current_site()->id, 'wp_sub_add_users_to_network' ) ) {
+			return;
+		}
+
+		add_action( 'users_list_table_query_args', [ $this, 'users_list_table_query_args' ] );
+		add_filter( 'views_users', [ $this, 'views_users' ] );
+	}
+
+	/**
+	 * Remove the blog_id limitation on the 'All' view.
+	 *
+	 * @param $args
+	 *
+	 * @return mixed
+	 */
+	public function users_list_table_query_args( $args ) {
+		if ( empty( $args['role'] ) ) {
+			// Is is safe to remove the blog_id arg because users are already limited to the current site by the
+			// injected meta query
+			$args['blog_id'] = 0;
+		}
+
+		return $args;
+	}
+
+	/**
+	 * Modifies the number in the 'All' tab to show all users of the current site.
+	 *
+	 * @param array $views
+	 *
+	 * @return array
+	 */
+	public function views_users( array $views ) {
+		$user_query = new WP_User_Query(
+			[
+				'blog_id'     => 0,
+				'number'      => 1,
+				'count_total' => true,
+				'fields'      => 'ids',
+			]
+		);
+
+		$views['all'] = preg_replace(
+			'/\(\d+\)/',
+			sprintf( '(%d)', $user_query->get_total() ),
+			$views['all']
+		);
+
+		return $views;
 	}
 
 }
