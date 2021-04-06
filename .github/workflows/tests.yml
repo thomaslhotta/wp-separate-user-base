@@ -1,9 +1,4 @@
 name: Run unit tests
-on:
-  push:
-    branches:
-    - master
-    - develop
 jobs:
   build:
     # Job name is Greeting
