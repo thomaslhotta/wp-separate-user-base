@@ -4,6 +4,7 @@ on:
     branches:
     - master
     - develop
+    - release/*
 jobs:
   build:
     # Job name is Greeting
@@ -17,20 +18,12 @@ jobs:
     env:
       extensions: pcov, curl, intl, mysqli, json, dom, bcmath, zip
       key: cache-v4
-      SELENIUM_SCREENSHOT_DIR: ${{ github.workspace }}/screenshots
-      SELENIUM_DOWNLOAD_DIR: ${{ github.workspace }}/screenshots
-      SELENIUM_PHP_ERROR_LOG_FILE: ${{ github.workspace }}/screenshots/errors.log
       COVERAGE_DIR: ${{ github.workspace }}/coverage
       COVERAGE_TMP_DIR: ${{ github.workspace }}/coverage-tmp
 
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-
-      - name: Update host file
-        run: |
-          echo 127.0.0.1 mysql | sudo tee -a /etc/hosts
-          echo 127.0.0.1 workspace | sudo tee -a /etc/hosts
 
       - name: Create directories
         run: |
@@ -39,15 +32,6 @@ jobs:
 
       - name: Start MySQL
         run: |
-
-          if [[ ! -f /etc/init.d/mysql ]]
-          then
-            sudo su
-            export RUNLEVEL=1
-            apt update
-            apt install mysql-server
-          fi
-
           sudo /etc/init.d/mysql start
 
       - name: Added MySQL users
@@ -102,6 +86,11 @@ jobs:
       - name: Set up pcov
         run: pcov clobber
 
+      - name: Patch issues with WordPress test suite
+        run: |
+          cd vendor/wordpress/phpunit/tests/phpunit/tests
+          grep -lr "@covers [_a-z]\{1,\}" . | xargs sed -i -e 's/@covers \([_a-z]\)/@covers \\\1/g'
+
       # Core unit tests
       - name: Run core unit tests
         run: |
@@ -114,9 +103,3 @@ jobs:
           name: coverage
           path: ${{ env.COVERAGE_DIR }}
 
-      - name: Upload code coverage
-        uses: actions/upload-artifact@v1
-        if: ${{ success() || failure() }}
-        with:
-          name: screenshots
-          path: ${{ env.SELENIUM_SCREENSHOT_DIR }}

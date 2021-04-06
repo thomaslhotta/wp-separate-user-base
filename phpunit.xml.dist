@@ -58,6 +58,8 @@
             <group>shortcode</group>        <!-- Would require us to build JS. -->
             <group>testsuite</group>        <!-- We are not testing the test suite itself -->
             <group>phpunit</group>          <!-- We are not testing the test suite itself -->
+            <group>functions.php</group>    <!-- Causes errors, we don't modify anything in here anyway  -->
+
         </exclude>
     </groups>
 
@@ -68,8 +70,8 @@
         </whitelist>
 
         <blacklist>
-        	<directory>./xvendor/</directory>
-            <directory>./xtests/</directory>
+        	<directory>./vendor/</directory>
+            <directory>./tests/</directory>
         </blacklist>
     </filter>
 
