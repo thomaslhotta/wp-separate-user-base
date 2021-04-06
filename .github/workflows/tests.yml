@@ -1,0 +1,122 @@
+name: Run unit tests
+on:
+  push:
+    branches:
+    - master
+    - develop
+jobs:
+  build:
+    # Job name is Greeting
+    name: tests
+    # This job runs on Linux
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-18.04]
+        php: ['7.2']
+    env:
+      extensions: pcov, curl, intl, mysqli, json, dom, bcmath, zip
+      key: cache-v4
+      SELENIUM_SCREENSHOT_DIR: ${{ github.workspace }}/screenshots
+      SELENIUM_DOWNLOAD_DIR: ${{ github.workspace }}/screenshots
+      SELENIUM_PHP_ERROR_LOG_FILE: ${{ github.workspace }}/screenshots/errors.log
+      COVERAGE_DIR: ${{ github.workspace }}/coverage
+      COVERAGE_TMP_DIR: ${{ github.workspace }}/coverage-tmp
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Update host file
+        run: |
+          echo 127.0.0.1 mysql | sudo tee -a /etc/hosts
+          echo 127.0.0.1 workspace | sudo tee -a /etc/hosts
+
+      - name: Create directories
+        run: |
+          mkdir -p $COVERAGE_DIR
+          mkdir -p $COVERAGE_TMP_DIR
+
+      - name: Start MySQL
+        run: |
+
+          if [[ ! -f /etc/init.d/mysql ]]
+          then
+            sudo su
+            export RUNLEVEL=1
+            apt update
+            apt install mysql-server
+          fi
+
+          sudo /etc/init.d/mysql start
+
+      - name: Added MySQL users
+        run: |
+          mysql -uroot -proot -e "CREATE DATABASE tests; CREATE USER 'default'@'localhost' IDENTIFIED WITH mysql_native_password BY 'secret'; GRANT ALL PRIVILEGES ON * . * TO 'default'@'localhost'; \q"
+
+      - name: Setup cache environment
+        id: cache-env
+        uses: shivammathur/cache-extensions@v1
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: ${{ env.extensions }}
+          key: ${{ env.key }}
+
+      - name: Cache extensions
+        uses: actions/cache@v1
+        with:
+          path: ${{ steps.cache-env.outputs.dir }}
+          key: ${{ steps.cache-env.outputs.key }}
+          restore-keys: ${{ steps.cache-env.outputs.key }}
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: ${{ env.extensions }}
+          ini-values: >
+            post_max_size=256M,
+            short_open_tag=On,
+            pcov.directory='${{ github.workspace }}/web',
+            pcov.exclude='/.*\/web\/app\/(?!core|themes|plugins\/nivea-club-integration).*/'
+          coverage: pcov
+          tools: pecl,composer:v1
+
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "::set-output name=dir::$(composer config cache-files-dir)"
+
+      - name: Cache composer dependencies
+        uses: actions/cache@v1
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Install PHP dependencies
+        run: composer install --prefer-dist
+
+      - name: Add include path
+        run: echo "${GITHUB_WORKSPACE}/vendor/bin" >> $GITHUB_PATH
+
+      - name: Set up pcov
+        run: pcov clobber
+
+      # Core unit tests
+      - name: Run core unit tests
+        run: |
+          phpunit --log-junit ~/results/core.xml --coverage-php $COVERAGE_TMP_DIR/core.cov
+
+      - name: Upload code coverage
+        uses: actions/upload-artifact@v1
+        if: ${{ success() || failure() }}
+        with:
+          name: coverage
+          path: ${{ env.COVERAGE_DIR }}
+
+      - name: Upload code coverage
+        uses: actions/upload-artifact@v1
+        if: ${{ success() || failure() }}
+        with:
+          name: screenshots
+          path: ${{ env.SELENIUM_SCREENSHOT_DIR }}
