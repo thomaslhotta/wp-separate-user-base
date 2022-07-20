@@ -7,20 +7,26 @@
       "type": "package",
       "package": {
         "name": "wordpress/phpunit",
-        "version": "5.2.9",
+        "version": "6.0.1",
          "dist": {
           "type": "zip",
-          "url": "https://github.com/WordPress/wordpress-develop/archive/5.2.9.zip"
+          "url": "https://github.com/WordPress/wordpress-develop/archive/6.0.1.zip"
         }
       }
     }
   ],
   "require": {},
   "require-dev": {
-    "wordpress/phpunit": "5.*",
-    "wp-cli/wp-cli": "v1.*",
-    "phpunit/phpunit": "6.*",
-    "phpunit/phpcov": "4.*",
-    "pcov/clobber": "^2.0"
+    "wordpress/phpunit": "6.*",
+    "wp-cli/wp-cli": "2.*",
+    "phpunit/phpunit": "8.*",
+    "phpunit/phpcov": "6.*",
+    "pcov/clobber": "^2.0",
+    "yoast/phpunit-polyfills": "^1.0"
+  },
+  "config": {
+    "allow-plugins": {
+      "wp-cli/autoload-splitter": true
+    }
   }
 }

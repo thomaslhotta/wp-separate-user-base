@@ -11,6 +11,8 @@
  * @return bool|WP_User
  */
 function get_user_by( $field, $value ) {
+	global $current_user;
+
 	$userdata = WP_User::get_data_by( $field, $value );
 
 	if ( ! $userdata ) {
@@ -35,6 +37,10 @@ function get_user_by( $field, $value ) {
 
 	if ( ! $bypass_check && ! wp_sub_user_exists( $user->ID ) ) {
 		return false;
+	}
+
+	if ( $current_user instanceof WP_User && $current_user->ID === (int) $userdata->ID ) {
+		return $current_user;
 	}
 
 	return $user;
