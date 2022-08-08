@@ -15,7 +15,9 @@
       }
     }
   ],
-  "require": {},
+  "require": {
+    "composer/installers": "1.* || ^2.1"
+  },
   "require-dev": {
     "wordpress/phpunit": "6.*",
     "wp-cli/wp-cli": "2.*",
@@ -26,7 +28,8 @@
   },
   "config": {
     "allow-plugins": {
-      "wp-cli/autoload-splitter": true
+      "wp-cli/autoload-splitter": true,
+      "composer/installers": true
     }
   }
 }
