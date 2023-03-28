@@ -30,6 +30,12 @@ jobs:
           mkdir -p $COVERAGE_DIR
           mkdir -p $COVERAGE_TMP_DIR
 
+      - name: Configure local dependencies
+        if: ${{ env.ACT }}
+        run: |
+          sudo apt update
+          sudo apt install -yqq mysql-server mysql-client
+
       - name: Start MySQL
         run: |
           sudo /etc/init.d/mysql start
@@ -79,6 +85,12 @@ jobs:
 
       - name: Install PHP dependencies
         run: composer install --prefer-dist
+
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled }}
+        with:
+          limit-access-to-actor: true
 
       - name: Patch issues with WordPress test suite
         run: |

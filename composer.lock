@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "590ed658df1f016663f96ae17b55e4e7",
+    "content-hash": "ae96258c16e88f8f2b42158c2dafcf37",
     "packages": [
         {
             "name": "composer/installers",
@@ -2059,13 +2059,63 @@
             "time": "2021-07-28T10:34:58+00:00"
         },
         {
-            "name": "wordpress/phpunit",
+            "name": "wordpress/wordpress",
             "version": "6.0.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/WordPress/wordpress-develop.git",
+                "reference": "75f4a8a2a567b28283fd4d457a713a5e770df216"
+            },
             "dist": {
                 "type": "zip",
-                "url": "https://github.com/WordPress/wordpress-develop/archive/6.0.3.zip"
+                "url": "https://api.github.com/repos/WordPress/wordpress-develop/zipball/75f4a8a2a567b28283fd4d457a713a5e770df216",
+                "reference": "75f4a8a2a567b28283fd4d457a713a5e770df216",
+                "shasum": ""
             },
-            "type": "library"
+            "require": {
+                "php": ">=5.6"
+            },
+            "require-dev": {
+                "dealerdirect/phpcodesniffer-composer-installer": "^0.7.0",
+                "phpcompatibility/phpcompatibility-wp": "~2.1.3",
+                "squizlabs/php_codesniffer": "3.6.0",
+                "wp-coding-standards/wpcs": "~2.3.0",
+                "yoast/phpunit-polyfills": "^1.0.1"
+            },
+            "type": "library",
+            "scripts": {
+                "compat": [
+                    "@php ./vendor/squizlabs/php_codesniffer/bin/phpcs --standard=phpcompat.xml.dist --report=summary,source"
+                ],
+                "format": [
+                    "@php ./vendor/squizlabs/php_codesniffer/bin/phpcbf --report=summary,source"
+                ],
+                "lint": [
+                    "@php ./vendor/squizlabs/php_codesniffer/bin/phpcs --report=summary,source"
+                ],
+                "lint:errors": [
+                    "@lint -n"
+                ],
+                "test": [
+                    "@php ./vendor/phpunit/phpunit/phpunit"
+                ]
+            },
+            "license": [
+                "GPL-2.0-or-later"
+            ],
+            "description": "WordPress is open source software you can use to create a beautiful website, blog, or app.",
+            "homepage": "https://wordpress.org",
+            "keywords": [
+                "blog",
+                "cms",
+                "wordpress",
+                "wp"
+            ],
+            "support": {
+                "issues": "https://core.trac.wordpress.org/",
+                "source": "https://github.com/WordPress/wordpress-develop/tree/6.0.3"
+            },
+            "time": "2022-10-17T20:14:27+00:00"
         },
         {
             "name": "wp-cli/mustangostang-spyc",
@@ -2251,67 +2301,6 @@
                 "source": "https://github.com/wp-cli/wp-cli"
             },
             "time": "2022-10-17T23:10:42+00:00"
-        },
-        {
-            "name": "yoast/phpunit-polyfills",
-            "version": "1.0.4",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/Yoast/PHPUnit-Polyfills.git",
-                "reference": "3c621ff5429d2b1ff96dc5808ad6cde99d31ea4c"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/Yoast/PHPUnit-Polyfills/zipball/3c621ff5429d2b1ff96dc5808ad6cde99d31ea4c",
-                "reference": "3c621ff5429d2b1ff96dc5808ad6cde99d31ea4c",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.4",
-                "phpunit/phpunit": "^4.8.36 || ^5.7.21 || ^6.0 || ^7.0 || ^8.0 || ^9.0"
-            },
-            "require-dev": {
-                "yoast/yoastcs": "^2.2.1"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-main": "1.x-dev",
-                    "dev-develop": "1.x-dev"
-                }
-            },
-            "autoload": {
-                "files": [
-                    "phpunitpolyfills-autoload.php"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "BSD-3-Clause"
-            ],
-            "authors": [
-                {
-                    "name": "Team Yoast",
-                    "email": "support@yoast.com",
-                    "homepage": "https://yoast.com"
-                },
-                {
-                    "name": "Contributors",
-                    "homepage": "https://github.com/Yoast/PHPUnit-Polyfills/graphs/contributors"
-                }
-            ],
-            "description": "Set of polyfills for changed PHPUnit functionality to allow for creating PHPUnit cross-version compatible tests",
-            "homepage": "https://github.com/Yoast/PHPUnit-Polyfills",
-            "keywords": [
-                "phpunit",
-                "polyfill",
-                "testing"
-            ],
-            "support": {
-                "issues": "https://github.com/Yoast/PHPUnit-Polyfills/issues",
-                "source": "https://github.com/Yoast/PHPUnit-Polyfills"
-            },
-            "time": "2022-11-16T09:07:52+00:00"
         }
     ],
     "aliases": [],
