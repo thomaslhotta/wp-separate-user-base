@@ -24,6 +24,12 @@
     "phpunit/phpunit": "9.*",
     "yoast/phpunit-polyfills": "^1.0"
   },
+  "scripts": {
+    "tests": [
+      "Composer\\Config::disableProcessTimeout",
+      "phpunit"
+    ]
+  },
   "config": {
     "allow-plugins": {
       "wp-cli/autoload-splitter": true,
