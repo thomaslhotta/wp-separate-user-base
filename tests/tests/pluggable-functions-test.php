@@ -1,8 +1,8 @@
 <?php
 namespace WP_SUB\Tests;
 
-use WP_UnitTestCase,
-	WP_SUB\WP_Separate_User_Base;
+use WP_UnitTestCase;
+use WP_SUB\WP_Separate_User_Base;
 
 class Pluggable_Functions_Test extends WP_UnitTestCase {
 
@@ -14,7 +14,7 @@ class Pluggable_Functions_Test extends WP_UnitTestCase {
 
 	protected $blog_2;
 
-	public function setUp() {
+	public function setUp() : void {
 		parent::setUp();
 
 		// Don't auto-add users
@@ -27,7 +27,7 @@ class Pluggable_Functions_Test extends WP_UnitTestCase {
 				'user_nicename' => 'u1',
 			)
 		);
-		$this->assertInternalType( 'int', $this->user_1 );
+		$this->assertIsInt( $this->user_1 );
 
 		$this->user_2 = self::factory()->user->create(
 			array(
@@ -36,7 +36,7 @@ class Pluggable_Functions_Test extends WP_UnitTestCase {
 				'user_nicename' => 'u2',
 			)
 		);
-		$this->assertInternalType( 'int', $this->user_2 );
+		$this->assertIsInt( $this->user_2 );
 
 		$this->blog_2 = self::factory()->blog->create();
 
@@ -127,7 +127,7 @@ class Pluggable_Functions_Test extends WP_UnitTestCase {
 
 		wp_sub_add_user_to_site( $this->user_3, $this->blog_2 );
 
-		$this->assertInternalType( 'int', $this->user_3 );
+		$this->assertIsInt( $this->user_3 );
 
 		$this->users_exist( 'id', array( $this->user_3 => $this->user_3 ) );
 		$this->users_exist( 'login', array( 'user1.1' => $this->user_3 ) );

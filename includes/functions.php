@@ -200,6 +200,11 @@ function wp_sub_get_accessible_users_query_args( int $current_user ) {
 	return $args;
 }
 
+/**
+ * Returns users the are not assigned to any site or network
+ *
+ * @return array
+ */
 function wp_sub_get_orphaned_users() {
 	global $wpdb;
 
@@ -220,7 +225,7 @@ function wp_sub_get_orphaned_users() {
 	$orphaned = [];
 	foreach ( $all_user_site_keys as $user_site ) {
 		foreach ( wp_parse_id_list( $user_site['site_ids'] ) as $site_id ) {
-			$orphaned[ $site_id ][] = $user_site['user_id'];
+			$orphaned[ $site_id ][] = intval( $user_site['user_id'] );
 		}
 	}
 

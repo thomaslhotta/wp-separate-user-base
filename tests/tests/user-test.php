@@ -1,22 +1,22 @@
 <?php
 namespace WP_SUB\Tests;
 
-use WP_User,
-	WP_User_Query,
-	WP_UnitTestCase,
-	WPDieException,
-	WP_SUB\WP_Separate_User_Base,
-	ArrayObject;
+use WP_User;
+use WP_User_Query;
+use WP_UnitTestCase;
+use WPDieException;
+use WP_SUB\WP_Separate_User_Base;
+use ArrayObject;
 
 class User_Test extends WP_UnitTestCase {
 
-	public function setUp() {
+	public function setUp() : void {
 		parent::setUp();
 
 		update_network_option( 1, 'wp_sub_add_users_to_network', 0 );
 	}
 
-	public function tearDown() {
+	public function tearDown() : void {
 		update_network_option( 1, 'wp_sub_add_users_to_network', 1 );
 		set_current_screen( 'front' );
 		wp_cache_init();
@@ -40,7 +40,7 @@ class User_Test extends WP_UnitTestCase {
 				'fields' => 'IDs',
 			)
 		);
-		$users = $query->get_results();
+		$users = array_map( 'intval', $query->get_results() );
 		$this->assertContains( $u1, $users );
 		$this->assertContains( $u2, $users );
 	}
@@ -66,7 +66,7 @@ class User_Test extends WP_UnitTestCase {
 				'wp_sub_disable_query_integration' => true,
 			)
 		);
-		$users = $query->get_results();
+		$users = array_map( 'intval', $query->get_results() );
 
 		restore_current_blog();
 
@@ -95,7 +95,7 @@ class User_Test extends WP_UnitTestCase {
 				'include' => array( $u1, $u2 ), // User 1 is created before we can set up our conditions
 			)
 		);
-		$users = $query->get_results();
+		$users = array_map( 'intval', $query->get_results() );
 
 		restore_current_blog();
 
@@ -130,7 +130,7 @@ class User_Test extends WP_UnitTestCase {
 				),
 			)
 		);
-		$users = $query->get_results();
+		$users = array_map('intval', $query->get_results());
 
 		restore_current_blog();
 
@@ -356,6 +356,8 @@ class User_Test extends WP_UnitTestCase {
 
 		$query = $this->hook_queries();
 
+
+
 		$misses = $wp_object_cache->cache_misses;
 		$hits   = $wp_object_cache->cache_hits;
 
@@ -363,8 +365,11 @@ class User_Test extends WP_UnitTestCase {
 		$this->assertEquals( $misses + 1, $wp_object_cache->cache_misses, 'Expected cache miss' );
 		$this->assertEquals( $hits, $wp_object_cache->cache_hits, 'Expected cache hit' );
 
-		$this->assertContains( "SELECT * FROM $wpdb->users WHERE", reset( $query ) );
-		$this->assertContains( (string) $id, reset( $query ) );
+		$last_query = $query->getArrayCopy();
+		$last_query = reset( $last_query );
+
+		$this->assertStringContainsString( "SELECT * FROM $wpdb->users WHERE", $last_query );
+		$this->assertStringContainsString( (string) $id, $last_query );
 
 		if ( $check_user_id ) {
 			$this->assertEquals( $check_user_id, $data->ID );
