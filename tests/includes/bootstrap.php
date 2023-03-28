@@ -1,4 +1,5 @@
 <?php
+
 // Set timezone to prevent warnings
 if ( ! defined( 'BASE_DIR' ) ) {
 	define( 'BASE_DIR', realpath( __DIR__ . '/../..' ) );
@@ -11,7 +12,7 @@ $table_prefix = 'wptests_';
 
 // Create the WP Test suite config
 $config_file = "<?php
-		@define( ABSPATH, '" . ABSPATH . "'  );
+		@define( 'ABSPATH', '" . ABSPATH . "'  );
 		@define( 'WP_TESTS_MULTISITE', true );
 		@define( 'WP_DEBUG', true );
 		@define( 'DB_NAME', '" . DB_NAME . "' );

@@ -1,24 +1,24 @@
 <?php
 namespace WP_SUB\Tests;
 
-use WP_UnitTestCase,
-	WP_SUB\WP_Separate_User_Base;
+use WP_UnitTestCase;
+use	WP_SUB\WP_Separate_User_Base;
 
 class Functions_Test extends WP_UnitTestCase {
 
-	public function setUp() {
+	public function setUp() : void {
 		parent::setUp();
 
 		update_network_option( 1, 'wp_sub_add_users_to_network', 0 );
 	}
 
-	public function tearDown() {
+	public function tearDown() : void {
 		parent::tearDown();
 
 		update_network_option( 1, 'wp_sub_add_users_to_network', 1 );
 	}
 
-	public function test_wp_sub_user_exists_not_exists() {
+	public function test_wp_sub_user_exists_not_exists() : void {
 		$user = self::factory()->user->create();
 		$blog = self::factory()->blog->create();
 
@@ -106,7 +106,7 @@ class Functions_Test extends WP_UnitTestCase {
 		wp_sub_add_user_to_site( $u5, $s3 );
 
 		wpmu_delete_blog( $s2, true );
-		
+
 		$users = wp_sub_get_orphaned_users();
 		$this->assertCount( 1, $users );
 		$this->assertArrayHasKey( $s2, $users );
