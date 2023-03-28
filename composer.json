@@ -7,10 +7,10 @@
       "type": "package",
       "package": {
         "name": "wordpress/phpunit",
-        "version": "6.0.1",
+        "version": "6.0.3",
          "dist": {
           "type": "zip",
-          "url": "https://github.com/WordPress/wordpress-develop/archive/6.0.1.zip"
+          "url": "https://github.com/WordPress/wordpress-develop/archive/6.0.3.zip"
         }
       }
     }
@@ -21,9 +21,7 @@
   "require-dev": {
     "wordpress/phpunit": "6.*",
     "wp-cli/wp-cli": "2.*",
-    "phpunit/phpunit": "8.*",
-    "phpunit/phpcov": "6.*",
-    "pcov/clobber": "^2.0",
+    "phpunit/phpunit": "9.*",
     "yoast/phpunit-polyfills": "^1.0"
   },
   "config": {
