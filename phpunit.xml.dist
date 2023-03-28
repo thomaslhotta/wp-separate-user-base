@@ -76,10 +76,10 @@
     </filter>
 
     <php>
-        <const name="DB_NAME" value="tests"/>
+        <const name="DB_NAME" value="lamp"/>
         <const name="DB_USER" value="root"/>
         <const name="DB_PASSWORD" value="root"/>
-        <const name="DB_HOST" value="127.0.0.1"/>
+        <const name="DB_HOST" value="localhost"/>
         <const name="WP_TESTS_DOMAIN" value="example.org"/>
         <const name="WP_ENV" value="development"/>
         <const name="WP_RUN_CORE_TESTS" value="1" />
