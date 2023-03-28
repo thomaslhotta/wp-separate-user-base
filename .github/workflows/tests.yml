@@ -68,8 +68,8 @@ jobs:
           ini-values: >
             post_max_size=256M,
             short_open_tag=On,
-            pcov.directory='${{ github.workspace }}/web',
-            pcov.exclude='/.*\/web\/app\/(?!core|themes|plugins\/nivea-club-integration).*/'
+            pcov.directory='${{ github.workspace }}/',
+            pcov.exclude='/.*\/vendor\/.*/'
           coverage: pcov
           tools: pecl,composer:v1
 
@@ -92,10 +92,10 @@ jobs:
         with:
           limit-access-to-actor: true
 
-      #- name: Patch issues with WordPress test suite
-      #  run: |
-      #    cd vendor/wordpress/wordpress/phpunit/tests/tests/phpunit/tests
-      #    grep -lr "@covers [_a-z]\{1,\}" . | xargs sed -i -e 's/@covers \([_a-z]\)/@covers \\\1/g'
+      - name: Patch issues with WordPress test suite
+        run: |
+          cd vendor/wordpress/wordpress/phpunit/tests/tests/phpunit/tests
+          grep -lr "@covers [_a-z]\{1,\}" . | xargs sed -i -e 's/@covers \([_a-z]\)/@covers \\\1/g'
 
       # Core unit tests
       - name: Run core unit tests
