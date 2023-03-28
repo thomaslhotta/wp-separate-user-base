@@ -65,7 +65,7 @@
     <php>
         <const name="DB_NAME" value="lamp"/>
         <const name="DB_USER" value="root"/>
-        <const name="DB_PASSWORD" value="root"/>
+        <const name="DB_PASSWORD" value=""/>
         <const name="DB_HOST" value="127.0.0.1"/>
         <const name="WP_TESTS_DOMAIN" value="example.org"/>
         <const name="WP_ENV" value="development"/>
