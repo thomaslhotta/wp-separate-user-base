@@ -1,3 +1,4 @@
 vendor/
 tests/log
 phpunit.xml
+.lando.local.yml

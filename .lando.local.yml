@@ -1,0 +1,21 @@
+name: wp-separate-user-base
+recipe: lamp
+config:
+  webroot: web/
+  php: '7.4'
+  database: mysql:5.7
+  xdebug: true
+
+proxy:
+    appserver:
+      - wp-separate-user-base.lndo.site
+services:
+  appserver:
+    scanner: false
+    build_as_root:
+      - pecl install pcov
+      - docker-php-ext-enable pcov
+    overrides:
+      environment:
+        COMPOSER_AUTH: '{"github-oauth":{"github.com":"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"}}'
+
