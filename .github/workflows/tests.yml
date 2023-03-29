@@ -89,7 +89,7 @@ jobs:
 
       - name: Patch issues with WordPress test suite
         run: |
-          cd vendor/wordpress/wordpress/phpunit/tests/tests/phpunit/tests
+          cd vendor/wordpress/wordpress/tests/phpunit/tests
           grep -lr "@covers [_a-z]\{1,\}" . | xargs sed -i -e 's/@covers \([_a-z]\)/@covers \\\1/g'
 
       # Core unit tests
