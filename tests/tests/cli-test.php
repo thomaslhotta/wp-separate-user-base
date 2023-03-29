@@ -2,11 +2,11 @@
 
 namespace WP_SUB\Tests;
 
-use Exception,
-    WP_SUB\CLI,
-	WP_UnitTestCase,
-	WP_User,
-	ArrayObject;
+use WP_SUB\CLI;
+use WP_UnitTestCase;
+use WP_User;
+use ArrayObject;
+use Exception;
 
 require_once BASE_DIR . '/vendor/wp-cli/wp-cli/php/class-wp-cli-command.php';
 require_once __DIR__ . '/../../includes/class-cli.php';
@@ -27,7 +27,7 @@ class CLI_Test extends WP_UnitTestCase {
 	 */
 	public $table_rows;
 
-	public function setUp() {
+	public function setUp() : void {
 		parent::setUp();
 
 		$this->success = '';
