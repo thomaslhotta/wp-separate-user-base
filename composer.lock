@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "1eef048bd97af58aeafc95e970ffb26c",
+    "content-hash": "81eaf66b3a9aef7093e56d81beb7897b",
     "packages": [
         {
             "name": "composer/installers",
@@ -2209,16 +2209,16 @@
         },
         {
             "name": "wordpress/wordpress",
-            "version": "6.0.3",
+            "version": "6.2.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/WordPress/wordpress-develop.git",
-                "reference": "75f4a8a2a567b28283fd4d457a713a5e770df216"
+                "reference": "52226e0308918474a0ac4ab8017e091ed3ae692a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/WordPress/wordpress-develop/zipball/75f4a8a2a567b28283fd4d457a713a5e770df216",
-                "reference": "75f4a8a2a567b28283fd4d457a713a5e770df216",
+                "url": "https://api.github.com/repos/WordPress/wordpress-develop/zipball/52226e0308918474a0ac4ab8017e091ed3ae692a",
+                "reference": "52226e0308918474a0ac4ab8017e091ed3ae692a",
                 "shasum": ""
             },
             "require": {
@@ -2246,6 +2246,7 @@
                     "@lint -n"
                 ],
                 "test": [
+                    "Composer\\Config::disableProcessTimeout",
                     "@php ./vendor/phpunit/phpunit/phpunit"
                 ]
             },
@@ -2262,9 +2263,9 @@
             ],
             "support": {
                 "issues": "https://core.trac.wordpress.org/",
-                "source": "https://github.com/WordPress/wordpress-develop/tree/6.0.3"
+                "source": "https://github.com/WordPress/wordpress-develop/tree/6.2.2"
             },
-            "time": "2022-10-17T20:14:27+00:00"
+            "time": "2023-05-20T04:27:48+00:00"
         },
         {
             "name": "wp-cli/mustangostang-spyc",
@@ -2520,5 +2521,5 @@
     "prefer-lowest": false,
     "platform": [],
     "platform-dev": [],
-    "plugin-api-version": "2.2.0"
+    "plugin-api-version": "2.3.0"
 }
