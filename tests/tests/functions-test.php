@@ -25,6 +25,11 @@ class Functions_Test extends WP_UnitTestCase {
 		$this->assertFalse( wp_sub_user_exists( $user, 1, $blog ) );
 	}
 
+    /**
+     * Super admins should always exist an all sites
+     *
+     * @return void
+     */
 	public function test_wp_sub_user_exists_allowed_super_admin() {
 		$user = self::factory()->user->create();
 		grant_super_admin( $user );
@@ -34,6 +39,11 @@ class Functions_Test extends WP_UnitTestCase {
 		$this->assertTrue( wp_sub_user_exists( $user, 1, $blog ) );
 	}
 
+    /**
+     * Users added to the entire network should exist on all sites
+     *
+     * @return void
+     */
 	public function test_wp_sub_user_exists_allowed_on_network() {
 		update_network_option( 1, 'wp_sub_add_users_to_network', 1 );
 
@@ -41,8 +51,17 @@ class Functions_Test extends WP_UnitTestCase {
 		$blog = self::factory()->blog->create();
 
 		$this->assertTrue( wp_sub_user_exists( $user, 1, $blog ) );
+
+		// Test that the user does not exist on another network.
+		// We do not actually have to have a second network as long as we do not rely on defaults
+		$this->assertFalse( wp_sub_user_exists( $user, 2, $blog ) );
 	}
 
+    /**
+     * A users should always exist on the site they are added to
+     *
+     * @return void
+     */
 	public function test_wp_sub_user_exists_allowed_on_site() {
 		$user = self::factory()->user->create();
 

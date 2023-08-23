@@ -5,6 +5,7 @@ on:
     - master
     - develop
     - release/*
+    - feature/*
 jobs:
   build:
     # Job name is Greeting
