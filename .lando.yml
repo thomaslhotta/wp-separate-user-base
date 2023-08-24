@@ -1,0 +1,17 @@
+name: wp-separate-user-base
+recipe: lamp
+config:
+  webroot: web/
+  php: '8.1'
+  xdebug: false
+services:
+  appserver:
+    scanner: false
+    build_as_root:
+      - pecl install pcov
+      - docker-php-ext-enable pcov
+tooling:
+  wp:
+    service: appserver
+    cmd: /app/vendor/bin/wp
+    description: Run WP-CLI commands
