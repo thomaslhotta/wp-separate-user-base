@@ -39,9 +39,10 @@ function get_user_by( $field, $value ) {
 		return false;
 	}
 
-	if ( $current_user instanceof WP_User && $current_user->ID === (int) $userdata->ID ) {
+	// Disabled for now because it causes issues. @todo: Check which WP versions this is required for.
+	/*if ( $current_user instanceof WP_User && $current_user->ID === (int) $userdata->ID ) {
 		return $current_user;
-	}
+	}*/
 
 	return $user;
 }

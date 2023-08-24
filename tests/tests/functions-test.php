@@ -1,30 +1,35 @@
 <?php
 namespace WP_SUB\Tests;
 
-use WP_UnitTestCase,
-	WP_SUB\WP_Separate_User_Base;
+use WP_UnitTestCase;
+use	WP_SUB\WP_Separate_User_Base;
 
 class Functions_Test extends WP_UnitTestCase {
 
-	public function setUp() {
+	public function setUp() : void {
 		parent::setUp();
 
 		update_network_option( 1, 'wp_sub_add_users_to_network', 0 );
 	}
 
-	public function tearDown() {
+	public function tearDown() : void {
 		parent::tearDown();
 
 		update_network_option( 1, 'wp_sub_add_users_to_network', 1 );
 	}
 
-	public function test_wp_sub_user_exists_not_exists() {
+	public function test_wp_sub_user_exists_not_exists() : void {
 		$user = self::factory()->user->create();
 		$blog = self::factory()->blog->create();
 
 		$this->assertFalse( wp_sub_user_exists( $user, 1, $blog ) );
 	}
 
+    /**
+     * Super admins should always exist an all sites
+     *
+     * @return void
+     */
 	public function test_wp_sub_user_exists_allowed_super_admin() {
 		$user = self::factory()->user->create();
 		grant_super_admin( $user );
@@ -34,6 +39,11 @@ class Functions_Test extends WP_UnitTestCase {
 		$this->assertTrue( wp_sub_user_exists( $user, 1, $blog ) );
 	}
 
+    /**
+     * Users added to the entire network should exist on all sites
+     *
+     * @return void
+     */
 	public function test_wp_sub_user_exists_allowed_on_network() {
 		update_network_option( 1, 'wp_sub_add_users_to_network', 1 );
 
@@ -41,8 +51,17 @@ class Functions_Test extends WP_UnitTestCase {
 		$blog = self::factory()->blog->create();
 
 		$this->assertTrue( wp_sub_user_exists( $user, 1, $blog ) );
+
+		// Test that the user does not exist on another network.
+		// We do not actually have to have a second network as long as we do not rely on defaults
+		$this->assertFalse( wp_sub_user_exists( $user, 2, $blog ) );
 	}
 
+    /**
+     * A users should always exist on the site they are added to
+     *
+     * @return void
+     */
 	public function test_wp_sub_user_exists_allowed_on_site() {
 		$user = self::factory()->user->create();
 
@@ -106,7 +125,7 @@ class Functions_Test extends WP_UnitTestCase {
 		wp_sub_add_user_to_site( $u5, $s3 );
 
 		wpmu_delete_blog( $s2, true );
-		
+
 		$users = wp_sub_get_orphaned_users();
 		$this->assertCount( 1, $users );
 		$this->assertArrayHasKey( $s2, $users );

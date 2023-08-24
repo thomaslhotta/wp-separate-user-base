@@ -5,16 +5,22 @@ on:
     - master
     - develop
     - release/*
+    - feature/*
 jobs:
   build:
     # Job name is Greeting
     name: tests
     # This job runs on Linux
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-18.04]
-        php: ['7.2']
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_DATABASE: lamp
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
     env:
       extensions: pcov, curl, intl, mysqli, json, dom, bcmath, zip
       key: cache-v4
@@ -23,31 +29,27 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Create directories
         run: |
           mkdir -p $COVERAGE_DIR
           mkdir -p $COVERAGE_TMP_DIR
 
-      - name: Start MySQL
-        run: |
-          sudo /etc/init.d/mysql start
-
-      - name: Added MySQL users
-        run: |
-          mysql -uroot -proot -e "CREATE DATABASE tests; CREATE USER 'default'@'localhost' IDENTIFIED WITH mysql_native_password BY 'secret'; GRANT ALL PRIVILEGES ON * . * TO 'default'@'localhost'; \q"
+      #- name: Added MySQL users
+       # run: |
+        #  mysql -uroot -proot -e "CREATE DATABASE tests; CREATE USER 'default'@'localhost' IDENTIFIED WITH mysql_native_password BY 'secret'; GRANT ALL PRIVILEGES ON * . * TO 'default'@'localhost'; \q"
 
       - name: Setup cache environment
         id: cache-env
         uses: shivammathur/cache-extensions@v1
         with:
-          php-version: ${{ matrix.php }}
+          php-version: 8.1
           extensions: ${{ env.extensions }}
           key: ${{ env.key }}
 
       - name: Cache extensions
-        uses: actions/cache@v1
+        uses: actions/cache@v3
         with:
           path: ${{ steps.cache-env.outputs.dir }}
           key: ${{ steps.cache-env.outputs.key }}
@@ -56,13 +58,13 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ matrix.php }}
+          php-version: 8.1
           extensions: ${{ env.extensions }}
           ini-values: >
             post_max_size=256M,
             short_open_tag=On,
-            pcov.directory='${{ github.workspace }}/web',
-            pcov.exclude='/.*\/web\/app\/(?!core|themes|plugins\/nivea-club-integration).*/'
+            pcov.directory='${{ github.workspace }}/',
+            pcov.exclude='/.*\/vendor\/.*/'
           coverage: pcov
           tools: pecl,composer:v1
 
@@ -71,7 +73,7 @@ jobs:
         run: echo "::set-output name=dir::$(composer config cache-files-dir)"
 
       - name: Cache composer dependencies
-        uses: actions/cache@v1
+        uses: actions/cache@v3
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
@@ -80,21 +82,15 @@ jobs:
       - name: Install PHP dependencies
         run: composer install --prefer-dist
 
-      - name: Add include path
-        run: echo "${GITHUB_WORKSPACE}/vendor/bin" >> $GITHUB_PATH
-
-      - name: Set up pcov
-        run: pcov clobber
-
       - name: Patch issues with WordPress test suite
         run: |
-          cd vendor/wordpress/phpunit/tests/phpunit/tests
+          cd vendor/wordpress/wordpress/tests/phpunit/tests
           grep -lr "@covers [_a-z]\{1,\}" . | xargs sed -i -e 's/@covers \([_a-z]\)/@covers \\\1/g'
 
       # Core unit tests
       - name: Run core unit tests
         run: |
-          phpunit --log-junit ~/results/core.xml --coverage-php $COVERAGE_TMP_DIR/core.cov
+          composer run-script tests -- --log-junit ~/results/core.xml --coverage-php $COVERAGE_TMP_DIR/core.cov
 
       - name: Upload code coverage
         uses: actions/upload-artifact@v1
