@@ -80,7 +80,7 @@ class CLI extends WP_CLI_Command {
 	 * @param $assoc_args
 	 */
 	public function remove_user_from_network( $args, $assoc_args ) {
-		$network = $this->get_network( $args[0] );
+		$network = $this->get_network( (int) $args[0] );
 		$user    = $this->get_user( $args[1] );
 
 		$networks = get_user_meta( $user->ID, WP_Separate_User_Base::NETWORK_META_KEY, false );
