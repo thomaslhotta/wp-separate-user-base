@@ -1,5 +1,9 @@
-VVersion 0.8 (2023-08-24)
-==========================
+Version 0.8 (2023-09-14)
+========================
+- Fixed remove-user-from-network-command
+
+Version 0.8 (2023-08-24)
+========================
 - Added support up to WordPress 6.3
 - Added support for PHP 8.1
 
