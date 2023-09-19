@@ -43,6 +43,7 @@ class WP_Separate_User_Base {
 		require __DIR__ . '/includes/class-user.php';
 		require __DIR__ . '/includes/class-admin.php';
 		require __DIR__ . '/includes/class-authentication.php';
+        require __DIR__ . '/includes/manage-sites.php';
 
 		$user = new User();
 		$user->register_hooks();
