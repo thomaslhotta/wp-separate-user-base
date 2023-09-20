@@ -43,7 +43,7 @@ class WP_Separate_User_Base {
 		require __DIR__ . '/includes/class-user.php';
 		require __DIR__ . '/includes/class-admin.php';
 		require __DIR__ . '/includes/class-authentication.php';
-        require __DIR__ . '/includes/manage-sites.php';
+		require __DIR__ . '/includes/manage-sites.php';
 
 		$user = new User();
 		$user->register_hooks();
@@ -55,7 +55,7 @@ class WP_Separate_User_Base {
 		$authentication->register_hooks();
 
 		if ( class_exists( 'WP_CLI_Command', false ) ) {
-			require_once __DIR__ .'/includes/class-cli.php';
+			require_once __DIR__ . '/includes/class-cli.php';
 			WP_CLI::add_command( 'separate-user-base', 'WP_SUB\CLI' );
 		}
 	}
