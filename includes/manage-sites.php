@@ -4,6 +4,9 @@ add_action( 'show_user_profile', 'manage_site_options', 1 );
 add_action( 'personal_options_update', 'manage_site_options_update' );
 add_action( 'edit_user_profile_update', 'manage_site_options_update' );
 
+/**
+ * @return void
+ */
 function manage_site_options() {
     $all_sites         = get_sites();
     $current_user_site = wp_sub_get_user_sites( get_current_user_id() );
@@ -92,8 +95,12 @@ function manage_site_options() {
     <?php
 }
 
+/**
+ * @param $user_id
+ * @return void
+ */
 function manage_site_options_update($user_id) {
-    $current_user_site = wp_sub_get_user_sites($user_id);
+    $current_user_site = wp_sub_get_user_sites( (int)$user_id );
 
     $siteIds = [];
     if ( isset( $_POST['site_id'] ) ) {
@@ -102,15 +109,14 @@ function manage_site_options_update($user_id) {
     if (!empty($current_user_site)) {
         foreach ($current_user_site as $siteId) {
             if (!in_array($siteId,$siteIds)) {
-                wp_sub_remove_user_from_site($user_id,$siteId);
+                wp_sub_remove_user_from_site($user_id, (int)$siteId);
             }
         }
     }
-
     if (!empty($siteIds)) {
         foreach ($siteIds as $siteId) {
             if (!in_array($siteId,$current_user_site)) {
-                wp_sub_add_user_to_site($user_id,$siteId);
+                wp_sub_add_user_to_site($user_id, (int)$siteId);
             }
         }
     }
