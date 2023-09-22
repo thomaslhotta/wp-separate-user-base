@@ -9,17 +9,122 @@ use WP_User_Query;
  * Adds WP-Admin functionality
  *
  * Class Admin
+ *
  * @package WP_SUB
  */
 class Admin {
 
+	/**
+	 * @return void
+	 */
 	public function register_hooks() {
 		// Network admin user table integration
 		add_filter( 'manage_users-network_columns', array( $this, 'add_network_column' ) );
 		add_action( 'manage_users_custom_column', array( $this, 'render_network_column' ), 10, 3 );
 
 		// Site admin user table integration
-		add_action( 'load-users.php', [ $this, 'on_user_page_init' ] );
+		add_action( 'load-users.php', array( $this, 'on_user_page_init' ) );
+
+		// Site admin user add table manage site
+		add_action( 'edit_user_profile', array( $this, 'manage_site_options' ), 1 );
+		add_action( 'show_user_profile', array( $this, 'manage_site_options' ), 1 );
+		add_action( 'personal_options_update', array( $this, 'manage_site_options_update' ) );
+		add_action( 'edit_user_profile_update', array( $this, 'manage_site_options_update' ) );
+
+		// add js file
+		add_action( 'admin_enqueue_scripts', array( $this, 'table_enqueue_admin_script' ) );
+	}
+
+	public function table_enqueue_admin_script( $hook ) {
+		wp_enqueue_script( 'script_table', plugin_dir_url( __FILE__ ) . 'js/table.js', array(), '1.0' );
+	}
+
+	/**
+	 * @return void
+	 */
+	public function manage_site_options( $user ) {
+		$all_sites         = get_sites();
+		$current_user_site = wp_sub_get_user_sites( $user->ID );
+		$data_site_format  = array();
+		?>
+		<h2>Manage Sites</h2>
+		<div class="wrap">
+			<div class="tablenav top">
+				<div class="alignleft actions bulkactions">
+					<select name="add_site" id="action-selector-site" style="min-width: 200px;">
+						<?php if ( count( $all_sites ) > 0 ) : ?>
+							<?php foreach ( $all_sites as $site ) : ?>
+								<?php $data_site_format[ $site->blog_id ] = $site; ?>
+								<?php if ( ! in_array( $site->blog_id, $current_user_site, true ) ) : ?>
+									<option value="<?php echo esc_html( $site->blog_id ); ?>">
+										<?php echo $site->blogname; ?> <b>(ID: <?php echo esc_html( $site->blog_id ); ?>)</b>
+									</option>
+								<?php endif; ?>
+							<?php endforeach; ?>
+						<?php else : ?>
+							<option ><?php echo _e( 'Empty site', 'wp-separate-user-base' ); ?></option>
+						<?php endif; ?>
+					</select>
+					<button type="button" id="add_site" class="button action"><?php echo _e( 'Add', 'wp-separate-user-base' ); ?></button>
+				</div>
+			</div>
+			<table id="list_site" class="wp-list-table widefat fixed striped table-view-list posts" style="width:500px;">
+				<tbody id="the-list">
+				<?php if ( count( $current_user_site ) > 0 ) : ?>
+					<?php foreach ( $current_user_site as $site_id ) : ?>
+						<tr id="site-<?php echo $site_id; ?>" >
+							<td class="title column-title has-row-actions column-primary page-title" data-colname="Site">
+								<?php if ( isset( $data_site_format[ $site_id ] ) ) : ?>
+									<?php echo esc_html( $data_site_format[ $site_id ]->blogname ); ?> (ID: <?php echo esc_html( $data_site_format[ $site_id ]->blog_id ); ?>)
+								<?php else : ?>
+									Site <?php echo $site_id; ?>
+								<?php endif; ?>
+							</td>
+							<td class="action-remove-site" style="width: 80px;" >
+								<input class="input-text" type="hidden" value="<?php echo esc_html( $site_id ); ?>" name="site_id[<?php echo esc_html( $site_id ); ?>]" />
+								<button type="button" class="button action">
+									<span class="btn-remove-site"><?php echo _e( 'Remove', 'wp-separate-user-base' ); ?></span>
+								</button>
+							</td>
+						</tr>
+					<?php endforeach; ?>
+				<?php else : ?>
+					<tr>
+						<td colspan="2"><?php echo _e( 'Empty site', 'wp-separate-user-base' ); ?></td>
+					</tr>
+				<?php endif; ?>
+
+				</tbody>
+			</table>
+		</div>
+		<?php
+	}
+
+	/**
+	 * @param $user_id
+	 * @return void
+	 */
+	public function manage_site_options_update( $user_id ) {
+		$current_user_site = wp_sub_get_user_sites( (int) $user_id );
+
+		$site_ids = array();
+		if ( isset( $_POST['site_id'] ) ) {
+			$site_ids = $_POST['site_id'];
+		}
+		if ( ! empty( $current_user_site ) ) {
+			foreach ( $current_user_site as $site_id ) {
+				if ( ! in_array( $site_id, $site_ids, true ) ) {
+					wp_sub_remove_user_from_site( $user_id, (int) $site_id );
+				}
+			}
+		}
+		if ( ! empty( $site_ids ) ) {
+			foreach ( $site_ids as $site_id ) {
+				if ( ! in_array( $site_id, $current_user_site, true ) ) {
+					wp_sub_add_user_to_site( $user_id, (int) $site_id );
+				}
+			}
+		}
 	}
 
 	public function add_network_column( array $columns ) {
@@ -49,7 +154,6 @@ class Admin {
 			$args['spam']     = 0;
 			$args['deleted']  = 0;
 		}
-
 
 		foreach ( get_sites( $args ) as $site ) {
 			$sites[ $site->id ] = (object) array(
@@ -110,8 +214,8 @@ class Admin {
 			return;
 		}
 
-		add_action( 'users_list_table_query_args', [ $this, 'users_list_table_query_args' ] );
-		add_filter( 'views_users', [ $this, 'views_users' ] );
+		add_action( 'users_list_table_query_args', array( $this, 'users_list_table_query_args' ) );
+		add_filter( 'views_users', array( $this, 'views_users' ) );
 	}
 
 	/**
@@ -140,12 +244,12 @@ class Admin {
 	 */
 	public function views_users( array $views ) {
 		$user_query = new WP_User_Query(
-			[
+			array(
 				'blog_id'     => 0,
 				'number'      => 1,
 				'count_total' => true,
 				'fields'      => 'ids',
-			]
+			)
 		);
 
 		$views['all'] = preg_replace(
