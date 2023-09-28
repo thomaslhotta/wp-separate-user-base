@@ -86,7 +86,7 @@ class Admin {
 								<?php $data_format[ $data->id ] = $data; ?>
 								<?php if ( ! in_array( (string) $data->id, $current_data, true ) ) : ?>
 									<option value="<?php echo esc_attr( $data->id ); ?>">
-										<?php echo esc_html( $data->site_name ); ?> <b>(ID: <?php echo esc_html( $data->id ); ?>)</b>
+										<?php echo esc_html( $data->site_name ); ?> <b>(<?php esc_html_e( 'ID', 'wp-separate-user-base' ); ?>: <?php echo esc_html( $data->id ); ?>)</b>
 									</option>
 								<?php endif; ?>
 							<?php endforeach; ?>
@@ -102,7 +102,7 @@ class Admin {
 						<tr id="site-<?php echo $data_id; ?>" >
 							<td class="title column-title has-row-actions column-primary page-title" data-colname="Site">
 								<?php if ( isset( $data_format[ $data_id ] ) ) : ?>
-									<?php echo esc_html( $data_format[ $data_id ]->site_name ); ?> (ID: <?php echo esc_html( $data_format[ $data_id ]->id ); ?>)
+									<?php echo esc_html( $data_format[ $data_id ]->site_name ); ?> (<?php esc_html_e( 'ID', 'wp-separate-user-base' ); ?>: <?php echo esc_html( $data_format[ $data_id ]->id ); ?>)
 								<?php else : ?>
 									Site <?php echo esc_html( $data_id ); ?>
 								<?php endif; ?>

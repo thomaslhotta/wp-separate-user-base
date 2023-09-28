@@ -1,11 +1,11 @@
 document.addEventListener('DOMContentLoaded', () => {
   document.addEventListener('click', (e) => {
-    if (e.target.classList && e.target.classList[0] === 'add_row') {
+    if (e.target.classList.contains('add_row')) {
       const select = e.target.parentNode.querySelector('select');
-      const id = e.target.parentNode.parentNode.parentNode.querySelector('table').querySelectorAll('tbody')[0];
-      const newRow = id.insertRow();
+      const id = e.target.closest('table').querySelector('tbody');
       const selectedElement = select.options[select.selectedIndex];
       if (selectedElement) {
+        const newRow = id.insertRow();
         newRow.innerHTML = `<tr id="site-${selectedElement.value}" >`
             + `<td class="title column-title has-row-actions column-primary page-title" data-colname="Site">${
               selectedElement.innerHTML
@@ -22,9 +22,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }, false);
   document.addEventListener('click', (e) => {
-    if (e.target.classList && e.target.classList[0] === 'btn-remove-site') {
+    if (e.target.classList.contains('btn-remove-site')) {
       const deleteRow = e.target.parentNode.parentNode.parentNode;
-      const select = e.target.parentNode.parentNode.parentNode.parentNode.parentNode.parentNode.querySelector('select');
+      const select = e.target.closest('.wrap').querySelector('select');
       const text = deleteRow.querySelectorAll('.column-title')[0].innerHTML;
       const { value } = deleteRow.querySelectorAll('.input-text')[0];
       select.options[select.options.length] = new Option(text, value);
