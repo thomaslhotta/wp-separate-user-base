@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.addEventListener('click', (e) => {
     if (e.target.classList.contains('add_row')) {
       const select = e.target.parentNode.querySelector('select');
-      const id = e.target.closest('table').querySelector('tbody');
+      const id = e.target.closest('.wrap').querySelector('tbody');
       const selectedElement = select.options[select.selectedIndex];
       if (selectedElement) {
         const newRow = id.insertRow();
@@ -23,9 +23,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }, false);
   document.addEventListener('click', (e) => {
     if (e.target.classList.contains('btn-remove-site')) {
-      const deleteRow = e.target.parentNode.parentNode.parentNode;
+      const deleteRow = e.target.closest('tr');
       const select = e.target.closest('.wrap').querySelector('select');
-      const text = deleteRow.querySelectorAll('.column-title')[0].innerHTML;
+      const text = deleteRow.querySelector('.column-title').innerHTML;
       const { value } = deleteRow.querySelectorAll('.input-text')[0];
       select.options[select.options.length] = new Option(text, value);
       deleteRow.parentNode.removeChild(deleteRow);
