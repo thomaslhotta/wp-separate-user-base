@@ -67,7 +67,7 @@ class Admin {
 	 */
 	protected function manage_network_options( $user ) {
 		$all_networks         = get_networks();
-		$current_user_network = get_user_meta( $user->ID, WP_Separate_User_Base::NETWORK_META_KEY, false );
+		$current_user_network = wp_sub_get_user_networks( (int) $user->ID );
 		?>
 		<h2><?php esc_html_e( 'Manage Networks', 'wp-separate-user-base' ); ?></h2>
 		<?php
@@ -159,7 +159,7 @@ class Admin {
 	}
 
 	protected function manage_network_update( $user_id ) {
-		$current_user_network = get_user_meta( $user_id, WP_Separate_User_Base::NETWORK_META_KEY, false );
+		$current_user_network = wp_sub_get_user_networks( (int) $user_id );
 
 		$network_ids = array();
 		if ( isset( $_POST['network_id'] ) ) {
@@ -189,7 +189,7 @@ class Admin {
 	}
 
 	public function get_blogs_of_user( $sites, $user_id, $all ) {
-		$user_site_ids = get_user_meta( $user_id, WP_Separate_User_Base::SITE_META_KEY, false );
+		$user_site_ids = wp_sub_get_user_networks( (int) $user_id );
 
 		$sites_in_list = wp_list_pluck( $sites, 'userblog_id' );
 
@@ -233,7 +233,7 @@ class Admin {
 			return $content;
 		}
 
-		$networks = get_user_meta( $user_id, WP_Separate_User_Base::NETWORK_META_KEY, false );
+		$networks = wp_sub_get_user_networks( (int) $user_id );
 		if ( empty( $networks ) ) {
 			return '';
 		}
