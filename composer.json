@@ -16,7 +16,9 @@
     "wordpress/wordpress": "6.*",
     "wp-cli/wp-cli": "2.*",
     "phpunit/phpunit": "9.*",
-    "yoast/phpunit-polyfills": "2.*"
+    "yoast/phpunit-polyfills": "2.*",
+    "symfony/dom-crawler": "*",
+    "symfony/css-selector": "^6.4"
   },
   "scripts": {
     "tests": [

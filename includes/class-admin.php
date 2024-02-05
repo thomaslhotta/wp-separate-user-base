@@ -35,10 +35,7 @@ class Admin {
 		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
 
 		// Adds functionality to edit user sites and networks.
-		add_action( 'edit_user_profile', array( $this, 'manage_user_section' ), 1 );
-		add_action( 'show_user_profile', array( $this, 'manage_user_section' ), 1 );
-		add_action( 'personal_options_update', array( $this, 'manage_user_section_update' ) );
-		add_action( 'edit_user_profile_update', array( $this, 'manage_user_section_update' ) );
+		add_action( 'admin_init', array( $this, 'admin_init' ) );
 
 		add_action( 'wp_ajax_wp_sub_render_table_sites', array( $this, 'ajax_render_table_sites' ) );
 		add_action( 'wp_ajax_wp_sub_render_table_network', array( $this, 'ajax_render_table_networks' ) );
@@ -53,6 +50,13 @@ class Admin {
 		add_action( 'user_new_form', array( $this, 'user_new_form' ) );
 
 		add_action( 'check_admin_referer', array( $this, 'check_admin_referer' ), 10, 2 );
+	}
+
+	public function admin_init() {
+		add_action( 'edit_user_profile', array( $this, 'manage_user_section' ), 1 );
+		add_action( 'show_user_profile', array( $this, 'manage_user_section' ), 1 );
+		add_action( 'personal_options_update', array( $this, 'manage_user_section_update' ) );
+		add_action( 'edit_user_profile_update', array( $this, 'manage_user_section_update' ) );
 	}
 
 	/**
@@ -182,7 +186,9 @@ class Admin {
 	 * @return int[] The list of ids.
 	 */
 	protected function calculate_id_list( string $name ): array {
-		$user_site_ids   = wp_parse_id_list( filter_input( INPUT_POST, $name, FILTER_DEFAULT, FILTER_REQUIRE_ARRAY ) );
+		$user_site_ids   = wp_parse_id_list(
+			filter_input( INPUT_POST, $name, FILTER_DEFAULT, FILTER_REQUIRE_ARRAY )
+		);
 		$user_site_ids[] = filter_input( INPUT_POST, $name . '-add', FILTER_VALIDATE_INT );
 		$user_site_ids   = array_filter( $user_site_ids );
 
@@ -376,14 +382,14 @@ class Admin {
 	/**
 	 * Handles updating the user's sites and networks.
 	 *
-	 * @param int $user_id The user ID to update.
+	 * @param int|string $user_id The user ID to update.
 	 *
 	 * @return void
 	 */
-	public function manage_user_section_update( int $user_id ): void {
+	public function manage_user_section_update( int|string $user_id ): void {
 		if ( current_user_can( 'manage_network_users' ) ) {
-
-			$this->manage_site_update( $user_id );
+			$user_id = intval( $user_id );
+			$this->update_site_ids( $user_id );
 			$this->manage_network_update( $user_id );
 		}
 	}
@@ -395,18 +401,10 @@ class Admin {
 	 *
 	 * @return void
 	 */
-	protected function manage_site_update( int $user_id ): void {
+	protected function update_site_ids( int $user_id ): void {
 		$current_user_sites = wp_sub_get_user_sites( $user_id );
 
-		$site_ids = wp_parse_id_list(
-			filter_input(
-				INPUT_POST,
-				self::POST_SITE_IDS,
-				FILTER_DEFAULT,
-				FILTER_REQUIRE_ARRAY
-			)
-		);
-		$site_ids = array_filter( $site_ids );
+		$site_ids = $this->get_id_array_from_post( self::POST_SITE_IDS );
 
 		foreach ( array_diff( $current_user_sites, $site_ids ) as $site_id_to_remove ) {
 			wp_sub_remove_user_from_site( $user_id, $site_id_to_remove );
@@ -427,15 +425,7 @@ class Admin {
 	protected function manage_network_update( int $user_id ): void {
 		$current_user_networks = wp_sub_get_user_networks( $user_id );
 
-		$network_ids = wp_parse_id_list(
-			filter_input(
-				INPUT_POST,
-				self::POST_NETWORK_IDS,
-				FILTER_DEFAULT,
-				FILTER_REQUIRE_ARRAY
-			)
-		);
-		$network_ids = array_filter( $network_ids );
+		$network_ids = $this->get_id_array_from_post( self::POST_NETWORK_IDS );
 
 		foreach ( array_diff( $current_user_networks, $network_ids ) as $id_to_remove ) {
 			wp_sub_remove_user_from_network( $user_id, $id_to_remove );
@@ -444,6 +434,26 @@ class Admin {
 		foreach ( array_diff( $network_ids, $current_user_networks ) as $id_to_add ) {
 			wp_sub_add_user_to_network( $user_id, $id_to_add );
 		}
+	}
+
+	/**
+	 * Returns the ids from the POST request.
+	 *
+	 * @param string $name The name of the POST request variable.
+	 *
+	 * @return array The ids.
+	 */
+	public function get_id_array_from_post( string $name ): array	{
+		$ids = wp_parse_id_list(
+			filter_input(
+				INPUT_POST,
+				$name,
+				FILTER_DEFAULT,
+				FILTER_REQUIRE_ARRAY
+			)
+		);
+
+		return array_filter( $ids );
 	}
 
 	/**
@@ -541,8 +551,10 @@ class Admin {
 	/**
 	 * Makes user table show all users of the current site. Only takes effect if users are not automatically added to
 	 * the current network.
+	 *
+	 * @return void
 	 */
-	public function on_user_page_init() {
+	public function on_user_page_init(): void {
 		// This is only needed if users are not added to the network automatically.
 		if ( get_network_option( get_current_site()->id, 'wp_sub_add_users_to_network' ) ) {
 			return;
