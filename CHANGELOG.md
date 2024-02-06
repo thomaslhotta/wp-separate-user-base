@@ -1,5 +1,10 @@
-Version 0.8 (2023-09-14)
+Version 1.0 (2024-02-06)
 ========================
+- Added admin interface for managing user availability across sites and networks
+- Existing users are now automatically added to a site when using the "Add existing User" form in the admin interface.
+
+Version 0.8.1 (2023-09-14)
+==========================
 - Fixed remove-user-from-network-command
 
 Version 0.8 (2023-08-24)
