@@ -299,7 +299,7 @@ class Admin {
 					<select name="<?php echo esc_attr( $name ); ?>-add">
 						<?php foreach ( $all_data as $site ) : ?>
 							<option value="<?php echo esc_attr( $site['id'] ); ?>">
-								<?php echo esc_html( $site['name'] ); ?>
+								<?php echo esc_html( sprintf( '%d - %s', $site['id'], $site['name'] ) ); ?>
 							</option>
 						<?php endforeach; ?>
 					</select>
