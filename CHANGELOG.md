@@ -1,3 +1,7 @@
+Version 1.0.2 (2024-02-06)
+==========================
+- Added ID to selector.
+
 Version 1.0.1 (2024-02-06)
 ==========================
 - Fixed wrong js name.
