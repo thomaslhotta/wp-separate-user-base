@@ -1,0 +1,17 @@
+.wp-sub-table {
+	max-width: 500px;
+}
+
+.wp-sub-table th,
+.wp-sub-table td {
+	font-size: 13px;
+	font-weight: normal;
+  	line-height: 1.5em;
+	padding: 8px 10px;
+}
+
+.wp-sub-table th:first-child,
+.wp-sub-table th:last-child{
+	max-width: 20px;
+}
+

@@ -47,10 +47,10 @@ function wp_sub_user_exists( int $user_id, int $network = 0, int $site = 0 ) : b
 
 	if ( is_super_admin( $user_id ) ) {
 		$allowed = true;
-	} else if ( wp_sub_user_exists_on_network( $user_id, $network ) ) {
+	} elseif ( wp_sub_user_exists_on_network( $user_id, $network ) ) {
 		// Check if user can access network
 		$allowed = true;
-	} else if ( wp_sub_user_exists_on_site( $user_id, $site ) ) {
+	} elseif ( wp_sub_user_exists_on_site( $user_id, $site ) ) {
 		// Check if user can access site
 		$allowed = true;
 	}
@@ -117,7 +117,7 @@ function wp_sub_remove_user_from_network( int $user_id, int $network_id ) : bool
 function wp_sub_user_exists_on_site( int $user_id, int $site_id ) : bool {
 	$allowed = in_array( $site_id, get_user_meta( $user_id, \WP_SUB\WP_Separate_User_Base::SITE_META_KEY, false ) );
 
-	return apply_filters( 'wp_sub_user_exists_on_network', $allowed, $user_id, $site_id );
+	return apply_filters( 'wp_sub_user_exists_on_site', $allowed, $user_id, $site_id );
 }
 
 /**
@@ -129,6 +129,17 @@ function wp_sub_user_exists_on_site( int $user_id, int $site_id ) : bool {
  */
 function wp_sub_get_user_sites( int $user_id ) {
 	return get_user_meta( $user_id, \WP_SUB\WP_Separate_User_Base::SITE_META_KEY, false );
+}
+
+/**
+ * Returns the site Networks the given user has explicitly been added to.
+ *
+ * @param int $user_id
+ *
+ * @return array
+ */
+function wp_sub_get_user_networks( int $user_id ) {
+	return get_user_meta( $user_id, \WP_SUB\WP_Separate_User_Base::NETWORK_META_KEY, false );
 }
 
 /**
@@ -176,25 +187,25 @@ function wp_sub_get_accessible_users_query_args( int $current_user ) {
 		'userblog_id'
 	);
 
-	$args = [
+	$args = array(
 		'wp_sub_disable_query_integration' => true,
-		'meta_query' => [
-			'wp_sub' => [
+		'meta_query'                       => array(
+			'wp_sub' => array(
 				'relation' => 'OR',
-				[
-					'key' => \WP_SUB\WP_Separate_User_Base::SITE_META_KEY,
-					'value' => $blogs,
+				array(
+					'key'     => \WP_SUB\WP_Separate_User_Base::SITE_META_KEY,
+					'value'   => $blogs,
 					'compare' => 'IN',
-				],
-			],
-		],
-	];
+				),
+			),
+		),
+	);
 
 	if ( wp_sub_user_exists_on_network( $current_user, get_current_site()->id ) ) {
-		$args['meta_query']['wp_sub'][] = [
-			'key' => \WP_SUB\WP_Separate_User_Base::NETWORK_META_KEY,
+		$args['meta_query']['wp_sub'][] = array(
+			'key'   => \WP_SUB\WP_Separate_User_Base::NETWORK_META_KEY,
 			'value' => get_current_site()->id,
-		];
+		);
 	}
 
 	return $args;
@@ -222,7 +233,7 @@ function wp_sub_get_orphaned_users() {
 		ARRAY_A
 	);
 
-	$orphaned = [];
+	$orphaned = array();
 	foreach ( $all_user_site_keys as $user_site ) {
 		foreach ( wp_parse_id_list( $user_site['site_ids'] ) as $site_id ) {
 			$orphaned[ $site_id ][] = intval( $user_site['user_id'] );
