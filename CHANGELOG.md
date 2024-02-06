@@ -1,3 +1,7 @@
+Version 1.0.1 (2024-02-06)
+==========================
+- Fixed wrong js name.
+
 Version 1.0 (2024-02-06)
 ========================
 - Added admin interface for managing user availability across sites and networks
