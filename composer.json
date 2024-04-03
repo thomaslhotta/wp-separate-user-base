@@ -18,7 +18,7 @@
     "phpunit/phpunit": "9.*",
     "yoast/phpunit-polyfills": "2.*",
     "symfony/dom-crawler": "*",
-    "symfony/css-selector": "^6.4"
+    "symfony/css-selector": "7.*"
   },
   "scripts": {
     "tests": [
