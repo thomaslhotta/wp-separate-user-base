@@ -25,6 +25,12 @@ class Admin {
 	 */
 	const POST_NETWORK_IDS = 'wp_sub_network_ids';
 
+	/**
+	 * Stores the last user id passed from ms_user_list_site_class filter for reuse in subsequent filters.
+	 *
+	 * @var null
+	 */
+	protected $last_user_id = null;
 
 	/**
 	 * Register the hooks for the admin functionality.
@@ -562,6 +568,8 @@ class Admin {
 
 		add_action( 'users_list_table_query_args', array( $this, 'users_list_table_query_args' ) );
 		add_filter( 'views_users', array( $this, 'views_users' ) );
+		add_filter( 'ms_user_list_site_class', array( $this, 'ms_user_list_site_class' ), 10, 4 );
+		add_filter( 'ms_user_list_site_actions', array( $this, 'ms_user_list_site_actions' ),10, 2 );
 	}
 
 	/**
@@ -608,6 +616,50 @@ class Admin {
 	}
 
 
+	/**
+	 * Stores the user id of the current row.
+	 *
+	 * @param array   $classes    The classes for the blog. Passed through from the filter.
+	 * @param int     $site_id    Not used
+	 * @param int     $network_id Not used
+	 * @param WP_User $user       The current user.
+	 *
+	 * @return array
+	 */
+	public function ms_user_list_site_class( array $classes, int $site_id, int $network_id, WP_User $user ): array {
+		unset( $site_id, $network_id );
+
+		$this->last_user_id = $user->ID;
+		return $classes;
+	}
+
+	/**
+	 * Adds a link to edit the user on the site.
+	 *
+	 * @param array $actions All row actions.
+	 * @param int   $site_id The site id.
+	 *
+	 * @return array
+	 */
+	public function ms_user_list_site_actions( array $actions, int $site_id ): array {
+		if ( $this->last_user_id ) {
+			$actions['edit_user'] = sprintf(
+				'<a href="%s">%s</a>',
+				get_admin_url( $site_id, 'user-edit.php?user_id=' . $this->last_user_id ),
+				esc_html__( 'Edit User' )
+			);
+		}
+
+		return $actions;
+	}
+
+	/**
+	 * Adds a checkbox to the new user for to add the user to the site automatically.
+	 *
+	 * @param string $form The form name.
+	 *
+	 * @return void
+	 */
 	public function user_new_form( string $form ) {
 		if ( 'add-existing-user' !== $form ) {
 			return;
@@ -616,7 +668,7 @@ class Admin {
 		<table class="form-table">
 		<tr>
 			<th scope="row">
-				<label for="xx">
+				<label>
 					<?php esc_html_e( 'Add to site\'s user base', 'wp-separate-user-base' ); ?>
 				</label>
 			</th>
@@ -684,3 +736,4 @@ class Admin {
 		}
 	}
 }
+
