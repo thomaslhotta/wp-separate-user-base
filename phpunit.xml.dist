@@ -64,7 +64,9 @@
                                                  cause queries.
                                             -->
 			<group>upgrade</group>          <!-- Causes errors, we don't modify anything in here anyway  -->
-        </exclude>
+			<group>filesystem</group>       <!-- We don't modify filesystem -->
+			<group>59520</group>            <!-- Error triggered by test setuo. -->
+		  </exclude>
     </groups>
     <php>
         <const name="DB_NAME" value="lamp"/>
