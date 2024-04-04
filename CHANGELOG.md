@@ -1,3 +1,7 @@
+Version  1.1 (2024-04-02)
+=========================
+- Added "edit user" row action the list list of blogs in the network user list.
+
 Version 1.0.2 (2024-02-06)
 ==========================
 - Added ID to selector.
