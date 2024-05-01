@@ -2367,16 +2367,16 @@
         },
         {
             "name": "wordpress/wordpress",
-            "version": "6.5.0",
+            "version": "6.5.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/WordPress/wordpress-develop.git",
-                "reference": "720804c22f867fe56332ab513428e945c24b889d"
+                "reference": "79924635d915b4fe4ee53a9277febb82ad5fbb5c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/WordPress/wordpress-develop/zipball/720804c22f867fe56332ab513428e945c24b889d",
-                "reference": "720804c22f867fe56332ab513428e945c24b889d",
+                "url": "https://api.github.com/repos/WordPress/wordpress-develop/zipball/79924635d915b4fe4ee53a9277febb82ad5fbb5c",
+                "reference": "79924635d915b4fe4ee53a9277febb82ad5fbb5c",
                 "shasum": ""
             },
             "require": {
@@ -2424,9 +2424,9 @@
             ],
             "support": {
                 "issues": "https://core.trac.wordpress.org/",
-                "source": "https://github.com/WordPress/wordpress-develop/tree/6.5.0"
+                "source": "https://github.com/WordPress/wordpress-develop/tree/6.5.2"
             },
-            "time": "2024-04-02T18:09:52+00:00"
+            "time": "2024-04-09T21:09:56+00:00"
         },
         {
             "name": "wp-cli/mustangostang-spyc",
@@ -2685,5 +2685,5 @@
     "platform-overrides": {
         "php": "8.1"
     },
-    "plugin-api-version": "2.3.0"
+    "plugin-api-version": "2.6.0"
 }
